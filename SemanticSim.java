@@ -16,7 +16,7 @@ public class SemanticSim {
         String[] prev = {"its","just","a","test"};
         //String read = "This is a test its just a test";
         
-        int window = 1;
+        int window = 2;
         
         //StringTokenizer st = new StringTokenizer(read," ");
         //Queue<String> q = new Queue<>(window);
@@ -26,13 +26,14 @@ public class SemanticSim {
 
         for(int a = 1; a <= window; a++) {
             
-            for(int i = a; i < test.length; i++) {
-                //System.out.println(test[i]+" "+test[i-a]);
-                //System.out.println(prev[i]+" "+prev[i-a]);
+            for(int i = 0; i < test.length; i++) {
+                
+                if(i < test.length-a) {
+                    System.out.println(test[i]+" "+test[i+a]);
+                }
                 
                 if(i >= b && a <= window) {
                     System.out.println(test[i]+" "+prev[a-1]);
-                    //System.out.println(i+" "+(a-1));
                 }
             
             }  
