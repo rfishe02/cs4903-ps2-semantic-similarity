@@ -2,12 +2,35 @@
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.HashMap;
+import java.util.StringTokenizer;
+import java.util.Queue;
 
 public class SemanticSim {
 
     public static void main(String[] args) {
-
+    
+        //buildTermContextMatrix(args[0]);
         
+        String[] test = {"this","is","a","test","its","just","a","test"};
+        String[] prev = {"this","was","prev"};
+        //String read = "This is a test its just a test";
+        
+        int window = 3;
+        
+        //StringTokenizer st = new StringTokenizer(read," ");
+        //Queue<String> q = new Queue<>(window);
+        // int len = st.countTokens();
+
+        for(int a = 1; a < window + 1; a++) {
+            
+            for(int i = a; i < test.length; i++) {
+                System.out.println(test[i]+" "+test[i-a]);
+            
+            }  
+    
+        }
+
 
     }
     
@@ -17,17 +40,35 @@ public class SemanticSim {
         // For each token, word --> col index 
         //                 cword --> row index
         
+        // Arrange in alphabetical order, then use binary search.
+        
+        // Get a cound of distinct words, decide matrix size.
+        
+        // Represent words differently.
+        
+        // Hashmap --> fill maxtrix
+        
+        // Need Pr(Word), Pr(w1, w2), total
+        
+        //HashMap<String,Integer> wordIndex = new HashMap<>();
+        int window = 3;
+        
         try {
         
             BufferedReader br = new BufferedReader(new FileReader(document));
             String[] spl;
             String read;
+            int col = 0;
             
             while((read=br.readLine())!=null) {
+                spl = read.split(" ");
+                
+                
                 
             }
             
             br.close();
+            
         
         } catch(IOException ex) {
             ex.printStackTrace();
