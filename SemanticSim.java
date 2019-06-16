@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
-
+import java.util.Queue;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -42,28 +42,43 @@ public class SemanticSim {
         return vocab;
     }
     
+    /** This method accepts a corpus with each term listed on a single line. */
+    
     public static void buildTermContextMatrix(String document) {
+        
+        int window = 3;
         
         try {
         
             HashMap<String,Integer> wordIndex = getVocab(document);
             BufferedReader br = new BufferedReader(new FileReader(document));
             int[][] termContentMatrix = new int[wordIndex.size()][wordIndex.size()];
-            String[] spl;
-            String[] prev = null;
             String read;
-            
+  
+            String[] prev = null;
+            String[] next = new String[window];
+            int i = 0;
+  
             while((read=br.readLine())!=null) {
-                spl = read.split(" ");
+     
+                next[i] = read;
+                i++;
                 
-                if(prev != null) {
-                    countTerms(wordIndex,termContentMatrix,prev,spl);
+                if(i == window) {
+                
+                    if(prev != null) {
+                        countTerms(wordIndex,termContentMatrix,prev,next,window);
+                    }
+
+                    i = 0;
+                    prev = next;
+                    next = new String[window];
+                    
                 }
                 
-                prev = spl;
             }
             
-            countTerms(wordIndex,termContentMatrix,prev,null);
+            countTerms(wordIndex,termContentMatrix,prev,null,window);
             
             br.close();
             
@@ -76,31 +91,43 @@ public class SemanticSim {
         
     }
     
-    public static void countTerms(HashMap<String,Integer> wordIndex, int[][] termContentMatrix, String[] prev, String[] spl) {
+    /** 
     
-        int window = 2;
-        int b = prev.length-window;
+    
+    
+    */
+    
+    public static void countTerms(HashMap<String,Integer> wordIndex, int[][] termContentMatrix, String[] prev, String[] next, int window) {
+    
+        int b = 0;
+    
+        for(int a = 0; a < window; a++) {
+            
+            for(int i = 0; i < prev.length-a; i++) {
+                 
+                if(i < prev.length-(a+1)) {
+                    termContentMatrix[wordIndex.get(prev[i])][wordIndex.get(prev[i+(a+1)])] +=1 ;
+                    termContentMatrix[wordIndex.get(prev[i+(a+1)])][wordIndex.get(prev[i])] +=1 ;
+                    System.out.println(prev[i]+" "+prev[i+(a+1)]);
+                }
+
+                if(next != null) {
+                    termContentMatrix[wordIndex.get(prev[i+b])][wordIndex.get(next[a])] +=1 ;
+                    termContentMatrix[wordIndex.get(next[a])][wordIndex.get(prev[i+b])] +=1 ;
                     
-        for(int a = 1; a <= window; a++) {
-            
-            for(int i = 0; i < prev.length; i++) {
-                
-                if(i < prev.length-a) {
-                    termContentMatrix[wordIndex.get(prev[i])][wordIndex.get(prev[i+a])] +=1 ;
-                    termContentMatrix[wordIndex.get(prev[i+a])][wordIndex.get(prev[i])] +=1 ;
-                    //System.out.println(prev[i]+" "+prev[i+a]);
+                    System.out.println(prev[i+b]+" "+next[a]);
+                    //System.out.println((i+b)+" "+a);
                 }
                 
-                if(i >= b && a <= window && spl != null) {
-                    termContentMatrix[wordIndex.get(prev[i])][wordIndex.get(spl[a-1])] +=1 ;
-                    termContentMatrix[wordIndex.get(spl[a-1])][wordIndex.get(prev[i])] +=1 ;
-                    //System.out.println(prev[i]+" "+spl[a-1]);
-                }
-            
-            }  
-                b++;
+            }
+            System.out.println();
+            b+=1;
+           
         }
     
+        // int i = 0; i < prev.length; i++
+        // i < prev.length-a
+        //termContentMatrix[wordIndex.get(prev[i])][wordIndex.get(prev[i+a])]
     }
     
     public static void calculateSimilarity() {
