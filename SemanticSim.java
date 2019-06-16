@@ -12,22 +12,31 @@ public class SemanticSim {
     
         //buildTermContextMatrix(args[0]);
         
-        String[] test = {"this","is","a","test","its","just","a","test"};
-        String[] prev = {"this","was","prev"};
+        String[] test = {"this","is","a","test"};
+        String[] prev = {"its","just","a","test"};
         //String read = "This is a test its just a test";
         
-        int window = 3;
+        int window = 1;
         
         //StringTokenizer st = new StringTokenizer(read," ");
         //Queue<String> q = new Queue<>(window);
         // int len = st.countTokens();
+        
+        int b = test.length-window;
 
-        for(int a = 1; a < window + 1; a++) {
+        for(int a = 1; a <= window; a++) {
             
             for(int i = a; i < test.length; i++) {
-                System.out.println(test[i]+" "+test[i-a]);
+                //System.out.println(test[i]+" "+test[i-a]);
+                //System.out.println(prev[i]+" "+prev[i-a]);
+                
+                if(i >= b && a <= window) {
+                    System.out.println(test[i]+" "+prev[a-1]);
+                    //System.out.println(i+" "+(a-1));
+                }
             
             }  
+            b++;
     
         }
 
