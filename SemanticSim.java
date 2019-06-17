@@ -155,6 +155,16 @@ public class SemanticSim {
         
         double val;
         
+        for(int i = 0; i < termContentMatrix.length; i++) {
+        
+            for (int j = 0; j <= i; j++) {
+                System.out.print(termContentMatrix[i][j]+" ");
+            }
+            System.out.println();
+            
+        }
+        
+        /*
         Iterator row = wordIndex.entrySet().iterator();
         Iterator col = wordIndex.entrySet().iterator();
         Map.Entry rPair;
@@ -172,7 +182,7 @@ public class SemanticSim {
             }
             System.out.println();
             
-        }
+        }*/
         
     }
     
