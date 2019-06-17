@@ -46,7 +46,7 @@ public class SemanticSim {
     
     public static void buildTermContextMatrix(String document) {
         
-        int window = 4;
+        int window = 3;
         
         try {
         
@@ -108,19 +108,21 @@ public class SemanticSim {
                 if(i < prev.length-(a+1)) {
                     termContentMatrix[wordIndex.get(prev[i])][wordIndex.get(prev[i+(a+1)])] +=1 ;
                     termContentMatrix[wordIndex.get(prev[i+(a+1)])][wordIndex.get(prev[i])] +=1 ;
-                    System.out.println(prev[i]+" "+prev[i+(a+1)]);
+                    
+                    //System.out.println(prev[i]+" "+prev[i+(a+1)]);
+                    //System.out.println(i+" "+(i+(a+1)));
                 }
 
                 if(prev[i+b] != null && next[a] != null) {
                     termContentMatrix[wordIndex.get(prev[i+b])][wordIndex.get(next[a])] +=1 ;
                     termContentMatrix[wordIndex.get(next[a])][wordIndex.get(prev[i+b])] +=1 ;
                     
-                    System.out.println(prev[i+b]+" "+next[a]);
+                    //System.out.println(prev[i+b]+" "+next[a]);
                     //System.out.println((i+b)+" "+a);
                 }
                 
             }
-            System.out.println();
+            //System.out.println();
             b+=1;
            
         }
