@@ -2,50 +2,26 @@
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.HashMap;
 import java.util.Queue;
 import java.util.Iterator;
 import java.util.Map;
 
+//-------------------------------
+
+import java.util.Comparator;
+import java.util.TreeSet;
+import java.util.HashMap;
+import java.util.ArrayList;
+
 public class SemanticSim {
 
-    static HashMap<String,Integer> wordIndex;
+    static ArrayList<String> vocab;
     static boolean debug = false;
 
     public static void main(String[] args) {
         
         float[][] tcm = buildTermContextMatrix(args[0]);
-        
 
-    }
-    
-    /** Pre-read the file to get |V|, and map terms to columns. */
-    
-    public static HashMap<String,Integer> getVocab(String filename) {
-        HashMap<String, Integer> vocab = new HashMap<>();
-        
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(filename));
-            String[] spl;
-            String read;
-            int col = 0;
-        
-            while((read = br.readLine())!=null) {
-                spl = read.split(" ");
-            
-                for(String s : spl) {
-                    if(!vocab.containsKey(s)) {
-                        vocab.put(s,col);
-                        col++;
-                    } 
-                }
-            }
-        } catch(IOException ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
-        
-        return vocab;
     }
     
     /** This method accepts a corpus with each term listed on a single line. */
@@ -55,16 +31,16 @@ public class SemanticSim {
         int window = 3;
        
         try {
-            wordIndex = getVocab(document);
+            vocab = getVocab(document);
             
             BufferedReader br = new BufferedReader(new FileReader(document));
-            tcm = new float[wordIndex.size()][wordIndex.size()];
+            tcm = new float[vocab.size()][vocab.size()];
             String[] prev = null;
             String[] next = new String[window];
             String read;
             int i = 0;
             
-            int[] sum = new int[wordIndex.size() + 1];
+            int[] sum = new int[vocab.size() + 1];
     
             while((read=br.readLine())!=null) {
                 next[i] = read;
@@ -73,24 +49,22 @@ public class SemanticSim {
                 if(i == window) {
                 
                     if(prev != null) {
-                        countTerms(wordIndex,tcm,window,prev,next,sum);
+                        countTerms(vocab,tcm,window,prev,next,sum);
                     }
 
                     i = 0;
                     prev = next;
                     next = new String[window];
-                    
                 }
             }
             
-            countTerms(wordIndex,tcm,window,prev,next,sum);
-            
+            countTerms(vocab,tcm,window,prev,next,sum);
             
             weightTerms(tcm,sum);
  
             if(debug) {
-                printContextMatrix(wordIndex,tcm);
-                //printSums(wordIndex,tcm);
+                //printContextMatrix(vocab,tcm);
+                //printSums(vocab,tcm);
             }
             
             br.close();
@@ -103,13 +77,55 @@ public class SemanticSim {
         return tcm;
     }
     
+    static class VocabComparator implements Comparator<String> {
+        public int compare(String s1, String s2) {
+            return s1.compareTo(s2);
+        }
+    }
+    
+    /** Pre-read the file to get |V|. */
+    
+    public static ArrayList<String> getVocab(String filename) {
+        TreeSet<String> set;
+        ArrayList<String> vocab = null;
+        BufferedReader br;
+        
+        try {
+            br = new BufferedReader(new FileReader(filename));
+            set = new TreeSet<>(new VocabComparator());
+            vocab = new ArrayList<>(set.size());
+            String[] spl;
+            String read;
+            int col = 0;
+        
+            while((read = br.readLine())!=null) {
+                spl = read.split(" ");
+            
+                for(String s : spl) {
+                    set.add(s);
+                }
+            }
+            
+            Iterator<String> it = set.iterator();
+            while(it.hasNext()) {
+                vocab.add(it.next());
+            }
+            
+        } catch(IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        return vocab;
+    }
+
     /** 
     
     Use a faux-matrix to count the contextual terms.
     
     */
     
-    public static void countTerms(HashMap<String,Integer> wordIndex, float[][] tcm, int window, String[] prev, String[] next, int[] sum) {
+    public static void countTerms(ArrayList<String> vocab, float[][] tcm, int window, String[] prev, String[] next, int[] sum) {
         int b = 0;
         int w1;
         int w2;
@@ -120,8 +136,8 @@ public class SemanticSim {
                  
                 if(i < prev.length-(a+1)) {
                 
-                    w1 = wordIndex.get(prev[i]);
-                    w2 = wordIndex.get(prev[i+(a+1)]);
+                    w1 = wordSearch(vocab,prev[i]);
+                    w2 = wordSearch(vocab,prev[i+(a+1)]);
                 
                     tcm[ w1 ][ w2 ] ++ ;
                     tcm[ w2 ][ w1 ] ++ ;
@@ -137,8 +153,8 @@ public class SemanticSim {
 
                 if(prev[i+b] != null && next[a] != null) {
                 
-                    w1 = wordIndex.get(prev[i+b]);
-                    w2 = wordIndex.get(next[a]);
+                    w1 = wordSearch(vocab,prev[i+b]);
+                    w2 = wordSearch(vocab,next[a]);
                 
                     tcm[ w1 ][ w2 ] ++ ;
                     tcm[ w2 ][ w1 ] ++ ;
@@ -159,6 +175,35 @@ public class SemanticSim {
             b+=1;
         }
     }
+    
+    /** Use a binary search to get the index of a word. This is an attempt to
+    avoid storing unnecessary integers to refer to a column. */
+    
+    public static int wordSearch(ArrayList<String> vocab, String target) {
+        
+        int ind = -1;
+        int l = 0;
+        int m;
+        int r = vocab.size()-1;
+        
+        while(l <= r) {
+        
+            m = (l+r)/2;
+            
+            if(target.compareTo(vocab.get(m)) > 0) {
+                l = m+1;
+            } else if(target.compareTo(vocab.get(m)) < 0) {
+                r = m-1;
+            } else {
+                return m;
+            }
+        
+        }
+        
+        return ind;
+    }    
+
+    /** Uses PPMI to weight the terms of the term-context matrix. */
     
     public static void weightTerms(float[][] tcm, int[] sum) {
         double val;
@@ -195,9 +240,9 @@ public class SemanticSim {
         
     
     }
-    
+
     /** Print the matrix to the console. */
-    
+    /*
     public static void printContextMatrix(HashMap<String,Integer> wordIndex, float[][] matrix) {
         Iterator row = wordIndex.entrySet().iterator();
         Iterator col = wordIndex.entrySet().iterator();
@@ -233,8 +278,6 @@ public class SemanticSim {
         }
     }
     
-    /** Print the added sums to the console. */
-    
     public static void printSums(HashMap<String,Integer> wordIndex, float[][] tcm, int[] sum) {
         Iterator row = wordIndex.entrySet().iterator();
         Iterator col = wordIndex.entrySet().iterator();
@@ -254,5 +297,5 @@ public class SemanticSim {
             System.out.println();
         }
     }
-
+    */
 }
