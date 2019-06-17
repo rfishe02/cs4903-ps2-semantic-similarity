@@ -9,11 +9,17 @@ import java.util.Map;
 
 public class SemanticSim {
 
+    static HashMap<String,Integer> wordIndex;
+    static int count;
+
     public static void main(String[] args) {
-    
-        buildTermContextMatrix(args[0]);
+        
+        int[][] tcm = buildTermContextMatrix(args[0]);
+        weightTerms(wordIndex,tcm);
 
     }
+    
+    /** Pre-read the file to get |V|, and map terms to columns. */
     
     public static HashMap<String,Integer> getVocab(String filename) {
         HashMap<String, Integer> vocab = new HashMap<>();
@@ -44,15 +50,18 @@ public class SemanticSim {
     
     /** This method accepts a corpus with each term listed on a single line. */
     
-    public static void buildTermContextMatrix(String document) {
+    public static int[][] buildTermContextMatrix(String document) {
         
+        int[][] termContentMatrix = null;
         int window = 3;
+        
+        count = 0;
         
         try {
         
-            HashMap<String,Integer> wordIndex = getVocab(document);
+            wordIndex = getVocab(document);
             BufferedReader br = new BufferedReader(new FileReader(document));
-            int[][] termContentMatrix = new int[wordIndex.size()][wordIndex.size()];
+            termContentMatrix = new int[wordIndex.size()][wordIndex.size()];
             String read;
   
             String[] prev = null;
@@ -82,18 +91,21 @@ public class SemanticSim {
             
             br.close();
             
-            printContextMatrix(wordIndex,termContentMatrix);
+            //printContextMatrix(wordIndex,termContentMatrix);
+            //System.out.println(count);
         
         } catch(IOException ex) {
             ex.printStackTrace();
             System.exit(1);
         }
         
+        return termContentMatrix;
+        
     }
     
     /** 
     
-    
+    Use a faux-matrix to count the contextual terms.
     
     */
     
@@ -109,6 +121,8 @@ public class SemanticSim {
                     termContentMatrix[wordIndex.get(prev[i])][wordIndex.get(prev[i+(a+1)])] +=1 ;
                     termContentMatrix[wordIndex.get(prev[i+(a+1)])][wordIndex.get(prev[i])] +=1 ;
                     
+                    count += 2;
+                    
                     //System.out.println(prev[i]+" "+prev[i+(a+1)]);
                     //System.out.println(i+" "+(i+(a+1)));
                 }
@@ -117,19 +131,49 @@ public class SemanticSim {
                     termContentMatrix[wordIndex.get(prev[i+b])][wordIndex.get(next[a])] +=1 ;
                     termContentMatrix[wordIndex.get(next[a])][wordIndex.get(prev[i+b])] +=1 ;
                     
+                    count += 2;
+                    
                     //System.out.println(prev[i+b]+" "+next[a]);
                     //System.out.println((i+b)+" "+a);
                 }
                 
             }
             //System.out.println();
+            
             b+=1;
            
         }
+
+    }
     
-        // int i = 0; i < prev.length; i++
-        // i < prev.length-a
-        //termContentMatrix[wordIndex.get(prev[i])][wordIndex.get(prev[i+a])]
+    /** Use PPMI to weight the frequencies of the term content matrix. */
+    
+    public static void weightTerms(HashMap<String,Integer> wordIndex, int[][] termContentMatrix) {
+        
+        // Pr( w_1, w_2 ) / Pr( w_1 ) * Pr_a( w_2 )
+        // Pr_a( w_2 ) = | w_2 |^a / SUM ( | c |^a)
+        
+        double val;
+        
+        Iterator row = wordIndex.entrySet().iterator();
+        Iterator col = wordIndex.entrySet().iterator();
+        Map.Entry rPair;
+        Map.Entry cPair;
+        
+        while(row.hasNext()) {
+            rPair = (Map.Entry)row.next();
+            
+            col = wordIndex.entrySet().iterator();
+            while(col.hasNext()) {
+            
+                cPair = (Map.Entry)col.next();
+                System.out.println( cPair.getKey() + " " + rPair.getKey() );
+
+            }
+            System.out.println();
+            
+        }
+        
     }
     
     public static void calculateSimilarity() {
@@ -142,23 +186,28 @@ public class SemanticSim {
     
     }
     
-    public static void printContextMatrix(HashMap<String,Integer> mp, int[][] matrix) {
+    /** Print the matrix to the console. */
     
+    public static void printContextMatrix(HashMap<String,Integer> wordIndex, int[][] matrix) {
+    
+        Iterator row = wordIndex.entrySet().iterator();
+        Iterator col = wordIndex.entrySet().iterator();
+        Map.Entry rPair;
+        Map.Entry cPair;
         int colNum;
+        
         System.out.printf("%10s ","");
-    
-        Iterator col = mp.entrySet().iterator();
+         
         while(col.hasNext()) {
-            Map.Entry cPair = (Map.Entry)col.next();
+            cPair = (Map.Entry)col.next();
             System.out.printf("%8s ",cPair.getKey());
         }
         System.out.println();
 
-        Iterator row = mp.entrySet().iterator();
         while(row.hasNext()) {
-            Map.Entry rPair = (Map.Entry)row.next();
+            rPair = (Map.Entry)row.next();
             
-            col = mp.entrySet().iterator();
+            col = wordIndex.entrySet().iterator();
             colNum = 0;
             while(col.hasNext()) {
             
@@ -166,7 +215,7 @@ public class SemanticSim {
                     System.out.printf("%10s ",rPair.getKey());
                 }
             
-                Map.Entry cPair = (Map.Entry)col.next();
+                cPair = (Map.Entry)col.next();
                 System.out.printf("%8d ",matrix[(int)rPair.getValue()][(int)cPair.getValue()]);
                 
                 colNum++;
