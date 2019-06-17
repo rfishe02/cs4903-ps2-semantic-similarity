@@ -2,16 +2,11 @@
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.Queue;
 import java.util.Iterator;
-import java.util.Map;
-
-//-------------------------------
-
 import java.util.Comparator;
 import java.util.TreeSet;
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 
 public class SemanticSim {
 
@@ -21,10 +16,16 @@ public class SemanticSim {
     public static void main(String[] args) {
         
         float[][] tcm = buildTermContextMatrix(args[0]);
+        
+        int u = wordSearch(vocab,"cake");
+        
+        getContext(tcm,5,u);
 
     }
     
-    /** This method accepts a corpus with each term listed on a single line. */
+    /** This method accepts a corpus with each term listed on a single line. 
+        It packs these terms into segments, which are used to find contextual terms.
+    */
     
     public static float[][] buildTermContextMatrix(String document) {
         float[][] tcm = null;
@@ -63,8 +64,8 @@ public class SemanticSim {
             weightTerms(tcm,sum);
  
             if(debug) {
-                //printContextMatrix(vocab,tcm);
-                //printSums(vocab,tcm);
+                printContextMatrix(vocab,tcm);
+                //printSums(vocab,tcm,sum);
             }
             
             br.close();
@@ -83,7 +84,9 @@ public class SemanticSim {
         }
     }
     
-    /** Pre-read the file to get |V|. */
+    /** Pre-read the file to get |V|. Uses a TreeMap to arrange distinct terms in order, 
+        which are eventually copied into an ArrayList.
+    */
     
     public static ArrayList<String> getVocab(String filename) {
         TreeSet<String> set;
@@ -121,7 +124,13 @@ public class SemanticSim {
 
     /** 
     
-    Use a faux-matrix to count the contextual terms.
+    Use a faux-matrix to count the contextual terms of a segment.
+    It pretends that the given segments are a S x S matrix.
+    
+    The two loops use their variables and offset values
+    to find the contextual terms for each word in the segment.
+    
+    It also finds contextual terms that overlap between to separate segments.
     
     */
     
@@ -180,7 +189,6 @@ public class SemanticSim {
     avoid storing unnecessary integers to refer to a column. */
     
     public static int wordSearch(ArrayList<String> vocab, String target) {
-        
         int ind = -1;
         int l = 0;
         int m;
@@ -231,17 +239,108 @@ public class SemanticSim {
         }
     }
     
-    public static void calculateSimilarity() {
+    /** Calculate cosine similarity, given two rows from the matrix. */
+    
+    public static float calculateSimilarity( float[][] tcm, int u, int v ) {
+        double one = 0.0;
+        double two = 0.0;
+        double tot = 0.0;
         
+        for(int i = 0; i < tcm.length; i++) {
+            tot += ( tcm[u][i] * tcm[v][i] );
+            one += Math.pow( tcm[u][i],2 );
+            two += Math.pow( tcm[v][i],2 );
+        }
+        
+        return (float)((tot) / (Math.sqrt(one) * Math.sqrt(two)));
+    }
+    
+    static class ContextComparator implements Comparator<ResultObj> {
+        public int compare(ResultObj s1, ResultObj s2) {
+            if(s1.score > s2.score) {
+                return -1;
+            } else if(s1.score < s2.score) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+    
+    static class ResultObj {
+    
+        String word;
+        float score;
+        
+        public ResultObj(String word, float score) {
+            this.word = word;
+            this.score = score;
+        }
     
     }
     
-    public static void getContext() {
-        
+    /** Use a priority queue to find the top ten most similiar words. */
     
+    public static String[] getContext( float[][] tcm, int k, int u) {
+        
+        PriorityQueue<ResultObj> pq = new PriorityQueue(new ContextComparator());
+        String[] res = new String[k];
+        
+        for(int i = 0; i < tcm.length; i++) {
+            pq.add(new ResultObj(vocab.get(i),calculateSimilarity(tcm,u,i)));
+        }
+        
+        for(int j = 0; j < k; j++) {
+            res[j] = pq.remove().word;
+            System.out.println(res[j]);
+        }
+    
+        return res;
     }
 
     /** Print the matrix to the console. */
+    
+    public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
+    
+        System.out.printf("%10s ","");
+        for(String s : vocab) {
+            System.out.printf("%8s ",s);
+        }
+        System.out.println();
+        
+        int colNum = 0;
+        
+        for(int i = 0; i < vocab.size(); i++) {
+        
+            colNum = 0;
+            for(int j = 0; j < vocab.size(); j++) {
+            
+                if(colNum == 0) {
+                    System.out.printf("%10s ",vocab.get(i));
+                }
+                colNum++;
+                
+                System.out.printf("%8.2f ",matrix[i][j]);
+            
+            }
+            System.out.println();
+        }
+    }
+    
+    public static void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
+    
+        for(int i = 0; i < vocab.size(); i++) {
+        
+            for(int j = 0; j < vocab.size(); j++) {
+            
+                System.out.println( vocab.get(j) +" ("+j+") " + sum[j+1]
+                + " " + vocab.get(i) +" ("+i+") "+ tcm[i][j] );
+            
+            }
+            System.out.println();
+        }
+    }
+    
     /*
     public static void printContextMatrix(HashMap<String,Integer> wordIndex, float[][] matrix) {
         Iterator row = wordIndex.entrySet().iterator();
