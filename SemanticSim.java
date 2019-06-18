@@ -12,6 +12,7 @@ public class SemanticSim {
 
     static ArrayList<String> vocab;
     static boolean debug = false;
+    static int window = 3;
 
     public static void main(String[] args) {
         
@@ -25,19 +26,25 @@ public class SemanticSim {
     
     /** This method accepts a corpus with each term listed on a single line. 
         It packs these terms into segments, which are used to find contextual terms.
+        
+        This method takes t time to iterate over tokens.
+
+        This method takes |V| space to store distinct tokens.
+        It also takes |V| x |V| space to store the frequencies.
+        
+        Altogether, it takes |V| + |V| x |V| space.
     */
     
     public static float[][] buildTermContextMatrix(String document) {
         float[][] tcm = null;
-        int window = 3;
-       
+
         try {
             vocab = getVocab(document);
             
             BufferedReader br = new BufferedReader(new FileReader(document));
-            tcm = new float[vocab.size()][vocab.size()];
             String[] prev = null;
             String[] next = new String[window];
+            tcm = new float[vocab.size()][vocab.size()];
             String read;
             int i = 0;
             
@@ -84,8 +91,18 @@ public class SemanticSim {
         }
     }
     
-    /** Pre-read the file to get |V|. Uses a TreeMap to arrange distinct terms in order, 
+    /** Pre-reads the file to obtain |V|. The vocab will be used to
+        find the location of terms in the matrix.
+        
+        Uses a TreeMap to arrange distinct terms in order, 
         which are eventually copied into an ArrayList.
+        
+        The first while loop runs in t time, where t represents tokens.
+        The add method for the TreeSet takes log(|V|) time.
+        
+        The second while loop takes |V| time.
+        
+        Altogether, it takes O( |V| + t log (|V|) ) time.
     */
     
     public static ArrayList<String> getVocab(String filename) {
@@ -122,15 +139,20 @@ public class SemanticSim {
         return vocab;
     }
 
-    /** 
+    /**
     
     Use a faux-matrix to count the contextual terms of a segment.
     It pretends that the given segments are a S x S matrix.
     
     The two loops use their variables and offset values
-    to find the contextual terms for each word in the segment.
-    
+    to find the contextual terms for each word in the segment. 
     It also finds contextual terms that overlap between to separate segments.
+    
+    The outer loop takes w time, where w represents the window size.
+    The inner loop takes s time, where s represents the size of a segment.
+    It takes log(|V|) time to find a word in the vocab.
+    
+    Altogether, it takes O( w s log(|V|) ).
     
     */
     
@@ -241,6 +263,8 @@ public class SemanticSim {
     
     /** Calculate cosine similarity, given two rows from the matrix. */
     
+    // Consider keeping sum stored.
+    
     public static float calculateSimilarity( float[][] tcm, int u, int v ) {
         double one = 0.0;
         double two = 0.0;
@@ -280,6 +304,8 @@ public class SemanticSim {
     }
     
     /** Use a priority queue to find the top ten most similiar words. */
+    
+    // Could I get a better runtime wit a graph search?
     
     public static String[] getContext( float[][] tcm, int k, int u) {
         
