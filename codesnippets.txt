@@ -179,6 +179,13 @@
     */
     
     //--------------------------------------------------------------------
+    // Constant time to look for term in a hashmap; O(n) time to find a term given a key.
+    //    O(1) insertion & deletion.
+    //    Need additional space to store integers.
+    // log time to look for term in an ordered ArrayList; log time to find a term given a key.
+    //    O(n) time insertion & deletion. 
+    
+    // 
     
     static ArrayList<String> vocab;
     
@@ -260,4 +267,54 @@
         return ind;
     }   
     
+    /** Print the contents of the matrix to the console. */
+    
+    public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
+    
+        System.out.printf("%10s ","");
+        for(String s : vocab) {
+            System.out.printf("%8s ",s);
+        }
+        System.out.println();
+        
+        int colNum = 0;
+        
+        for(int i = 0; i < vocab.size(); i++) {
+        
+            colNum = 0;
+            for(int j = 0; j < vocab.size(); j++) {
+            
+                if(colNum == 0) {
+                    System.out.printf("%10s ",vocab.get(i));
+                }
+                colNum++;
+                
+                System.out.printf("%8.2f ",matrix[i][j]);
+            
+            }
+            System.out.println();
+        }
+    }
+    
+    /** Print the contents of the sums array. */
+    
+    public static void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
+    
+        for(int i = 0; i < vocab.size(); i++) {
+        
+            for(int j = 0; j < vocab.size(); j++) {
+            
+                System.out.println( vocab.get(j) +" ("+j+") " + sum[j+1]
+                + " " + vocab.get(i) +" ("+i+") "+ tcm[i][j] );
+            
+            }
+            System.out.println();
+        }
+    }
+    
+        /*
+        for(int i = 0; i < tcm.length; i++) {
+            pq.add(new ResultObj(vocab.get(i),calculateSimilarity(tcm,u,i)));
+        }*/
+        
     

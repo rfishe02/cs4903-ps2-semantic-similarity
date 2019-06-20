@@ -7,7 +7,9 @@ import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
+
 import java.util.HashMap;
+import java.util.Map;
 
 public class SemanticSim {
 
@@ -18,7 +20,7 @@ public class SemanticSim {
         
         float[][] tcm = buildTermContextMatrix(args[0]);
         
-        int u = vocab.get("sugar");
+        int u = vocab.get("roses");
         
         getContext(tcm,5,u);
         
@@ -58,7 +60,7 @@ public class SemanticSim {
                 if(i == window) {
                 
                     if(prev != null) {
-                        countTerms(vocab,tcm,window,prev,next,sum);
+                        countTerms(tcm,window,prev,next,sum);
                     }
 
                     i = 0;
@@ -67,7 +69,7 @@ public class SemanticSim {
                 }
             }
             
-            countTerms(vocab,tcm,window,prev,next,sum);
+            countTerms(tcm,window,prev,next,sum);
  
             weightTerms(tcm,sum);
             
@@ -84,7 +86,8 @@ public class SemanticSim {
         return tcm;
     }
  
-    /** Pre-reads the file to obtain |V|. The vocab will be used to
+    /** 
+        Pre-reads the file to obtain |V|. The vocab will be used to
         find the location of terms in the matrix.
     */
     
@@ -120,7 +123,6 @@ public class SemanticSim {
     }
 
     /**
-    
     Use a faux-matrix to count the contextual terms of a segment.
     It pretends that the given segments are a S x S matrix.
     
@@ -133,10 +135,9 @@ public class SemanticSim {
     It takes log(|V|) time to find a word in the vocab.
     
     Altogether, it takes O( w s log(|V|) ).
-    
     */
     
-    public static void countTerms(HashMap<String,Integer> vocab, float[][] tcm, int window, String[] prev, String[] next, int[] sum) {
+    public static void countTerms(float[][] tcm, int window, String[] prev, String[] next, int[] sum) {
         int b = 0;
         int w1, w2;
         
@@ -186,7 +187,7 @@ public class SemanticSim {
     
     public static void weightTerms(float[][] tcm, int[] sum) {
         double val;
-
+        
         for(int row = 0; row < tcm.length; row++) {
         
             for (int col = 0; col < tcm[0].length; col++) {
@@ -198,27 +199,27 @@ public class SemanticSim {
                 }
                 
                 val = Math.max(val,0);
+                
                 tcm[row][col] = (float)val;
                 
-                //System.out.printf("%2.2f ",tcm[row][col]);
+                System.out.printf("%2.2f ",tcm[row][col]);
             }
-            //System.out.println();
+            System.out.println();
         }
+
     }
     
     /** Calculate cosine similarity, given two rows from the matrix. */
-    
-    // Consider keeping sum stored.
     
     public static float calculateSimilarity( float[][] tcm, int u, int v ) {
         double one = 0.0;
         double two = 0.0;
         double tot = 0.0;
         
-        for(int i = 0; i < tcm.length; i++) {
-            tot += ( tcm[u][i] * tcm[v][i] );
-            one += Math.pow( tcm[u][i],2 );
-            two += Math.pow( tcm[v][i],2 );
+        for(int col = 0; col < tcm[0].length; col++) {
+            tot += ( tcm[u][col] * tcm[v][col] );
+            one += Math.pow( tcm[u][col],2 );
+            two += Math.pow( tcm[v][col],2 );
         }
         
         return (float)((tot) / (Math.sqrt(one) * Math.sqrt(two)));
@@ -227,12 +228,14 @@ public class SemanticSim {
     /** Use a priority queue to find the top ten most similiar words. */
 
     public static String[] getContext(float[][] tcm, int k, int u) {
-        
         PriorityQueue<ResultObj> pq = new PriorityQueue(new ContextComparator());
+        Iterator row = vocab.entrySet().iterator();
+        Map.Entry rPair;
         String[] res = new String[k];
         
-        for(int i = 0; i < tcm.length; i++) {
-            pq.add(new ResultObj(vocab.get(i),calculateSimilarity(tcm,u,i)));
+        while(row.hasNext()) {
+            rPair = (Map.Entry)row.next();
+            pq.add(new ResultObj((String)rPair.getKey(),calculateSimilarity(tcm,u,(int)rPair.getValue())));
         }
         
         for(int j = 0; j < k; j++) {
@@ -243,51 +246,6 @@ public class SemanticSim {
         return res;
     } 
 
-    /** Print the contents of the matrix to the console. */
-    
-    public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
-    
-        System.out.printf("%10s ","");
-        for(String s : vocab) {
-            System.out.printf("%8s ",s);
-        }
-        System.out.println();
-        
-        int colNum = 0;
-        
-        for(int i = 0; i < vocab.size(); i++) {
-        
-            colNum = 0;
-            for(int j = 0; j < vocab.size(); j++) {
-            
-                if(colNum == 0) {
-                    System.out.printf("%10s ",vocab.get(i));
-                }
-                colNum++;
-                
-                System.out.printf("%8.2f ",matrix[i][j]);
-            
-            }
-            System.out.println();
-        }
-    }
-    
-    /** Print the contents of the sums array. */
-    
-    public static void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
-    
-        for(int i = 0; i < vocab.size(); i++) {
-        
-            for(int j = 0; j < vocab.size(); j++) {
-            
-                System.out.println( vocab.get(j) +" ("+j+") " + sum[j+1]
-                + " " + vocab.get(i) +" ("+i+") "+ tcm[i][j] );
-            
-            }
-            System.out.println();
-        }
-    }
-    
     //--------------------------------------------------------
     // CUSTOM CLASSES
     
@@ -319,6 +277,63 @@ public class SemanticSim {
             this.score = score;
         }
     
+    }
+    
+    //--------------------------------------------------------
+
+    public static void printContextMatrix(HashMap<String,Integer> wordIndex, float[][] matrix) {
+        Iterator row = wordIndex.entrySet().iterator();
+        Iterator col = wordIndex.entrySet().iterator();
+        Map.Entry rPair;
+        Map.Entry cPair;
+        int colNum;
+        
+        System.out.printf("%10s ","");
+         
+        while(col.hasNext()) {
+            cPair = (Map.Entry)col.next();
+            System.out.printf("%8s ",cPair.getKey());
+        }
+        System.out.println();
+
+        while(row.hasNext()) {
+            rPair = (Map.Entry)row.next();
+            
+            col = wordIndex.entrySet().iterator();
+            colNum = 0;
+            while(col.hasNext()) {
+            
+                if(colNum == 0) {
+                    System.out.printf("%10s ",rPair.getKey());
+                }
+            
+                cPair = (Map.Entry)col.next();
+                System.out.printf("%8.2f ",matrix[(int)rPair.getValue()][(int)cPair.getValue()]);
+                
+                colNum++;
+            }
+            System.out.println();
+        }
+    }
+    
+    public static void printSums(HashMap<String,Integer> wordIndex, float[][] tcm, int[] sum) {
+        Iterator row = wordIndex.entrySet().iterator();
+        Iterator col = wordIndex.entrySet().iterator();
+        Map.Entry rPair;
+        Map.Entry cPair;
+        
+        while(row.hasNext()) {
+            rPair = (Map.Entry)row.next();
+            
+            col = wordIndex.entrySet().iterator();
+            while(col.hasNext()) {
+            
+                cPair = (Map.Entry)col.next();
+                System.out.println( cPair.getKey() +" ("+(int)cPair.getValue()+") "+ sum[(int)cPair.getValue()+1]+ " " + rPair.getKey() +" ("+(int)rPair.getValue()+") "+ tcm[(int)cPair.getValue()][(int)rPair.getValue()] );
+
+            }
+            System.out.println();
+        }
     }
     
 }
