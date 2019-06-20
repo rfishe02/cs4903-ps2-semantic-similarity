@@ -1,0 +1,263 @@
+        
+        String[] test = {"roses", "are", "red", "violets", "are", "blue"};
+        int segment = 5;
+        int window = 3;
+        
+        for(int i = 0; i <= segment-(window-1); i++) {
+            for(int j = 0; j < window;  j++) {
+                //System.out.println(test[i]+" "+test[i+j]);
+                System.out.println(test[i+j]+" "+test[i]);
+            }
+        }
+        
+        /*
+        int window = 3;
+        int a = -1;
+        int b = window-1;
+
+        for(int i = 0; i < window; i++) {
+            //System.out.println(i+" "+((window-1)-i));
+            System.out.println(i+" "+(a+1));
+            System.out.println(i+" "+(i+b));
+            System.out.println(i+" "+a);
+            a++;
+            b--;
+        }*/
+        
+        /*
+        0 0
+        0 2
+        0 -1
+        1 1
+        1 2
+        1 0
+        2 2
+        2 2
+        2 1
+        */
+        
+        /*
+        0 0     | x
+        0 1 0 1 | 
+        0 2 0 2 | x
+        1 1     | x
+        2 0     | 
+        1 0     | x
+        1 2 1 2 | x
+        2 1     | x
+        2 2     | x
+        */
+        
+        /*String[] test = {"roses", "are", "red"};
+        String[] test2 = {"violets","are","blue"};
+        int window = 3;
+
+        int a = 0;
+       
+
+        for(int i = 0; i <= window; i++) {
+        
+            for(int j = 0; j < window-a; j++) {
+  
+                System.out.println(i+" "+(i+j));
+                System.out.println((i+j)+" "+i);
+                
+            }
+            a++;
+        }*/
+        
+    //--------------------------------------------------------
+    // TESTING
+    //--------------------------------------------------------
+    
+    static class Node {
+    
+        String word;
+        int row;
+        float val;
+        
+        public Node(String word, int row, float val) {
+            this.word = word;
+            this.row = row;
+            this.val = val;
+        }
+    
+    }
+    
+    public static void bfs(float[][] tcm, int r) {
+    
+        boolean[] visited = new boolean[tcm.length];
+        Queue<Node> q = new LinkedList<>();
+        Node n;
+        
+        q.add(new Node(vocab.get(r),r,tcm[r][r]));
+        
+        while(!q.isEmpty()) {
+        
+            n = q.remove();
+            
+            if(!visited[n.row]) {
+            
+                System.out.println(n.word+" "+n.row+" "+n.val);
+            
+                visited[n.row] = true;
+                
+                for(int col = 0; col < tcm[0].length; col++) {
+                    
+                    if(!visited[col] && tcm[n.row][col] > 0) {
+                        q.add(new Node(vocab.get(col),col,tcm[n.row][col]));
+                    }
+                    
+                }
+                
+            }
+        
+        }
+    
+    }
+    
+    //--------------------------------------------------------
+    //--------------------------------------------------------
+    
+    //--------------------------------------------------------
+    
+    /*
+    public static void printContextMatrix(HashMap<String,Integer> wordIndex, float[][] matrix) {
+        Iterator row = wordIndex.entrySet().iterator();
+        Iterator col = wordIndex.entrySet().iterator();
+        Map.Entry rPair;
+        Map.Entry cPair;
+        int colNum;
+        
+        System.out.printf("%10s ","");
+         
+        while(col.hasNext()) {
+            cPair = (Map.Entry)col.next();
+            System.out.printf("%8s ",cPair.getKey());
+        }
+        System.out.println();
+
+        while(row.hasNext()) {
+            rPair = (Map.Entry)row.next();
+            
+            col = wordIndex.entrySet().iterator();
+            colNum = 0;
+            while(col.hasNext()) {
+            
+                if(colNum == 0) {
+                    System.out.printf("%10s ",rPair.getKey());
+                }
+            
+                cPair = (Map.Entry)col.next();
+                System.out.printf("%8.2f ",matrix[(int)rPair.getValue()][(int)cPair.getValue()]);
+                
+                colNum++;
+            }
+            System.out.println();
+        }
+    }
+    
+    public static void printSums(HashMap<String,Integer> wordIndex, float[][] tcm, int[] sum) {
+        Iterator row = wordIndex.entrySet().iterator();
+        Iterator col = wordIndex.entrySet().iterator();
+        Map.Entry rPair;
+        Map.Entry cPair;
+        
+        while(row.hasNext()) {
+            rPair = (Map.Entry)row.next();
+            
+            col = wordIndex.entrySet().iterator();
+            while(col.hasNext()) {
+            
+                cPair = (Map.Entry)col.next();
+                System.out.println( cPair.getKey() +" ("+(int)cPair.getValue()+") "+ sum[(int)cPair.getValue()]+ " " + rPair.getKey() +" ("+(int)rPair.getValue()+") "+ tcm[(int)cPair.getValue()][(int)rPair.getValue()] );
+
+            }
+            System.out.println();
+        }
+    }
+    */
+    
+    //--------------------------------------------------------------------
+    
+    static ArrayList<String> vocab;
+    
+    /** Pre-reads the file to obtain |V|. The vocab will be used to
+        find the location of terms in the matrix.
+        
+        Uses a TreeMap to arrange distinct terms in order, 
+        which are eventually copied into an ArrayList.
+        
+        The first while loop runs in t time, where t represents tokens.
+        The add method for the TreeSet takes log(|V|) time.
+        
+        The second while loop takes |V| time.
+        
+        Altogether, it takes O( |V| + t log (|V|) ) time.
+    */
+    
+    public static ArrayList<String> getVocab(String filename) {
+        ArrayList<String> vocab = null;
+  
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            TreeSet<String> set = new TreeSet<>(new VocabComparator());
+            vocab = new ArrayList<>(set.size());
+            String[] spl;
+            String read;
+        
+            while((read = br.readLine())!=null) {
+                spl = read.split(" ");
+            
+                for(String s : spl) {
+                    set.add(s);
+                }
+            }
+            
+            Iterator<String> it = set.iterator();
+            while(it.hasNext()) {
+                vocab.add(it.next());
+            }
+            
+        } catch(IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        return vocab;
+    }
+    
+    /**
+    Use a binary search to get the index of a word. This is an attempt to
+    avoid mapping Strings to column values. However, it takes log time rather
+    than constant time.
+    
+    The program uses the index of the String as the column.
+    
+    This technique only works when the matrix is exaclty |V| x |V|.
+    */
+    
+    public static int wordSearch(ArrayList<String> vocab, String target) {
+        int ind = -1;
+        int l = 0;
+        int m;
+        int r = vocab.size()-1;
+        
+        while(l <= r) {
+        
+            m = (l+r)/2;
+            
+            if(target.compareTo(vocab.get(m)) > 0) {
+                l = m+1;
+            } else if(target.compareTo(vocab.get(m)) < 0) {
+                r = m-1;
+            } else {
+                return m;
+            }
+        
+        }
+        
+        return ind;
+    }   
+    
+    
