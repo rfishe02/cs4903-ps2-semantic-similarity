@@ -20,7 +20,7 @@ public class SemanticSim {
         
         float[][] tcm = buildTermContextMatrix(args[0]);
         
-        int u = vocab.get("roses");
+        int u = vocab.get("sweet");
         
         getContext(tcm,5,u);
         
@@ -202,9 +202,9 @@ public class SemanticSim {
                 
                 tcm[row][col] = (float)val;
                 
-                System.out.printf("%2.2f ",tcm[row][col]);
+                //System.out.printf("%2.2f ",tcm[row][col]);
             }
-            System.out.println();
+            //System.out.println();
         }
 
     }
@@ -232,10 +232,13 @@ public class SemanticSim {
         Iterator row = vocab.entrySet().iterator();
         Map.Entry rPair;
         String[] res = new String[k];
+        String tmp;
         
         while(row.hasNext()) {
             rPair = (Map.Entry)row.next();
-            pq.add(new ResultObj((String)rPair.getKey(),calculateSimilarity(tcm,u,(int)rPair.getValue())));
+            if((int)rPair.getValue() != u) {
+                pq.add(new ResultObj((String)rPair.getKey(),calculateSimilarity(tcm,u,(int)rPair.getValue())));
+            }
         }
         
         for(int j = 0; j < k; j++) {
