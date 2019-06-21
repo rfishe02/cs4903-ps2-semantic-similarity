@@ -67,6 +67,44 @@
         }*/
         
     //--------------------------------------------------------
+    
+    public static void test(String document) {
+    
+        try {
+        
+            int v = 20;
+            int a;
+    
+            BufferedReader br = new BufferedReader(new FileReader(document));
+            String read;
+        
+            while((read=br.readLine())!=null) {
+        
+                a = getInd(read,0,v);
+        
+                System.out.println(read+" "+a);
+        
+            }
+        
+        } catch(IOException ex) {
+        
+        }
+    
+    }
+        
+    public static int getInd(String term, int i, int m) {
+        
+        int res = -1;
+        int c1 = 1;
+        int c2 = 3;
+        
+        res = (int)(( term.hashCode() + i ) % m );
+        
+        return res;
+        
+    }
+        
+    //--------------------------------------------------------
     // TESTING
     //--------------------------------------------------------
     
@@ -184,8 +222,6 @@
     //    Need additional space to store integers.
     // log time to look for term in an ordered ArrayList; log time to find a term given a key.
     //    O(n) time insertion & deletion. 
-    
-    // 
     
     static ArrayList<String> vocab;
     
@@ -317,4 +353,27 @@
             pq.add(new ResultObj(vocab.get(i),calculateSimilarity(tcm,u,i)));
         }*/
         
+    //---------------------------------------------------
+    
+    public static String[] getContext(float[][] tcm, int k, int u) {
+        PriorityQueue<ResultObj> pq = new PriorityQueue(new ContextComparator());
+        Iterator row = vocab.entrySet().iterator();
+        Map.Entry rPair;
+        String[] res = new String[k];
+        String tmp;
+        
+        while(row.hasNext()) {
+            rPair = (Map.Entry)row.next();
+            if((int)rPair.getValue() != u) {
+                pq.add(new ResultObj((String)rPair.getKey(),calculateSimilarity(tcm,u,(int)rPair.getValue())));
+            }
+        }
+        
+        for(int j = 0; j < k; j++) {
+            res[j] = pq.remove().word;
+            System.out.println(res[j]);
+        }
+    
+        return res;
+    } 
     
