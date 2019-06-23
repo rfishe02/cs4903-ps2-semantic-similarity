@@ -14,13 +14,13 @@ import java.util.Map;
 public class SemanticSim {
 
     static ArrayList<String> vocab;
-    static int window = 3;
+    static int window = 4;
 
     public static void main(String[] args) {
         
         float[][] tcm = buildTermContextMatrix(args[0]);
         
-        int u = wordSearch("sweet");
+        int u = wordSearch(args[1]);
         
         getContext(tcm,5,u);
 
