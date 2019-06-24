@@ -238,6 +238,8 @@ public class Semantic {
 
     /** Uses PPMI to weight all values in the term-context matrix. */
     
+    // Consider looping over half, if matrix is symmetric?
+    
     public static void weightTerms(float[][] tcm, int[] sum) {
         double val;
         
