@@ -107,6 +107,7 @@ public class Semantic {
             
             countTerms(tcm,window,prev,next,sum);
  
+            //weightTermsSym(tcm,sum);
             weightTerms(tcm,sum);
             
             //printContextMatrix(vocab,tcm);
@@ -238,30 +239,21 @@ public class Semantic {
         
         return ind;
     }  
-
+    
     /** Uses PPMI to weight all values in the term-context matrix. 
-        This method assumes that the matrix is exactly |V| x |V|.
-        It loops over half of the aray, and calculates the other half at he same time.
     */
-
+    
     public static void weightTerms(float[][] tcm, int[] sum) {
         
         System.out.println("weighing frequencies");
 
         double e = Math.pow(sum[0],0.75);
-        double r;
-        double c;
 
         for(int row = 0; row < tcm.length; row++) {
             
-            r = ( (double)sum[row+1] / sum[0] );
-            
-            for (int col = row; col < tcm[0].length; col++) {
+            for (int col = 0; col < tcm[0].length; col++) {
      
-                c = ( (double)sum[col+1] / sum[0] );
-     
-                tcm[row][col] = (float)getV( tcm[row][col], r, sum[col+1], sum[0], e );
-                tcm[col][row] = (float)getV( tcm[col][row], c, sum[row+1], sum[0], e );
+                tcm[row][col] = (float)getV2( tcm[row][col], sum[row+1], sum[col+1], e );
                     
                 //System.out.printf("%2.2f ",tcm[row][col]);
             }
@@ -269,11 +261,61 @@ public class Semantic {
         }
 
     }
+
+    /** Uses PPMI to weight all values in the term-context matrix. 
+        This method assumes that the matrix is exactly |V| x |V|.
+        It loops over half of the aray, and calculates the other half at he same time.
+        
+        This approach doesn't seem to improve the runtime by much.
+        Making changes to the PPMI calculation had a greater effect.
+    */
+
+    public static void weightTermsSym(float[][] tcm, int[] sum) {
+        
+        System.out.println("weighing frequencies");
+
+        double e = Math.pow(sum[0],0.75);
+        
+        for(int row = 0; row < tcm.length; row++) {
+            
+            for (int col = row; col < tcm[0].length; col++) {
+     
+                tcm[row][col] = (float)getV2( tcm[row][col], sum[row+1], sum[col+1], e );
+                tcm[col][row] = (float)getV2( tcm[col][row], sum[col+1], sum[row+1], e );
+                    
+                //System.out.printf("%2.2f ",tcm[row][col]);
+            }
+            //System.out.println();
+        }
+
+    }
+        
+    /** Calculates cosine similarity, given two rows in the context-term matrix. 
+        This is written like the exact formula.
+    */
     
     public static double getV(float a, double b, float c, int d, double e) {
     
         double v = ( (double)a / d ) 
-                   / ( b * ( Math.pow( c,0.75 ) / e ) );
+                   / ( ((double)b / d) * ( Math.pow( c,0.75 ) / e ) );
+                    
+         if(v > 0.0001) {
+            v = Math.log(v) / Math.log(2);
+         }
+                    
+         v = Math.max(v,0);
+         
+         return v;
+    
+    }
+    
+    /** Calculates cosine similarity, given two rows in the context-term matrix. 
+        This version was re-written to avoid extra division.
+    */
+    
+    public static double getV2(float a, float b, float c, double e) {
+    
+        double v = (double)a / ( b * ( Math.pow( c,0.75 ) / e ) );
                     
          if(v > 0.0001) {
             v = Math.log(v) / Math.log(2);
