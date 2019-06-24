@@ -11,7 +11,7 @@ import java.util.PriorityQueue;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SemanticSim {
+public class Semantic {
 
     static ArrayList<String> vocab;
     static int window = 4;
@@ -121,7 +121,7 @@ public class SemanticSim {
     /**
     It uses two loops with variables and offset values to find the 
     contextual terms for each word in the segment. It also finds the contextual terms 
-    that overlap between to separate segments.
+    that overlap between two separate segments.
     */
     
     public static void countTerms(float[][] tcm, int window, String[] prev, String[] next, int[] sum) {
@@ -167,11 +167,11 @@ public class SemanticSim {
     }
     
     /**
-    Use a binary search to get the index of a word. This is an attempt to
-    avoid mapping Strings to column values. However, it takes log time rather
-    than constant time.
+    Use a binary search to find the reference to a column for a given term. 
+    This is an attempt to avoid using a HashMap to map Strings to indices. 
+    However, it takes logarithmic time rather than constant time.
     
-    The program uses the index of the String as the column.
+    The method returns the index of the String as the column reference.
     */
     
     public static int wordSearch(String target) {
@@ -197,7 +197,7 @@ public class SemanticSim {
         return ind;
     }  
 
-    /** Uses PPMI to weight the terms of the term-context matrix. */
+    /** Uses PPMI to weight all values in the term-context matrix. */
     
     public static void weightTerms(float[][] tcm, int[] sum) {
         double val;
@@ -223,7 +223,7 @@ public class SemanticSim {
 
     }
     
-    /** Calculate cosine similarity, given two rows from the matrix. */
+    /** Calculates cosine similarity, given two rows in the context-term matrix. */
     
     // try to use threads here.
     
@@ -242,9 +242,9 @@ public class SemanticSim {
     }
     
     /** 
-    Loop over the vocab, or row of the tcm matrix, to find the most similiar words.
-    It assumes that the ith position of the tcm matrix represents the ith word in the vocab.
-    Uses a priority queue to find the top ten most similiar words. 
+    Look through V, the rows of the tcm matrix, to find the contextual words.
+    It assumes that the ith row in the tcm matrix represents the ith word in V, which is in alphabetic order.
+    This method uses a priority queue to return the k most similiar words. 
     */
 
     public static String[] getContext(float[][] tcm, int k, int u) {
@@ -268,11 +268,15 @@ public class SemanticSim {
     //--------------------------------------------------------
     // CUSTOM CLASSES
     
+    /** The TreeMap in getVocab uses this class to arrange terms in alphabetic order. */
+    
     static class VocabComparator implements Comparator<String> {
         public int compare(String s1, String s2) {
             return s1.compareTo(s2);
         }
     }
+    
+    /** The PriorityQueue in getContext uses this class to rank all terms. */
     
     static class ContextComparator implements Comparator<ResultObj> {
         public int compare(ResultObj s1, ResultObj s2) {
@@ -285,6 +289,8 @@ public class SemanticSim {
             }
         }
     }
+    
+    /** This class stores the results for the getContext method. */
     
     static class ResultObj {
     
