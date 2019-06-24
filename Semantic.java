@@ -1,15 +1,10 @@
 
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.util.Iterator;
 import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /** Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line. 
 
@@ -237,25 +232,27 @@ public class Semantic {
     }  
 
     /** Uses PPMI to weight all values in the term-context matrix. */
-    
-    // Consider looping over half, if matrix is symmetric?
-    
+
     public static void weightTerms(float[][] tcm, int[] sum) {
-        double val;
+        double c = Math.pow(sum[0],0.75);
+        double r;
+        double v;
         
         for(int row = 0; row < tcm.length; row++) {
         
+            r = ( (double)sum[row+1] / sum[0] );
+        
             for (int col = 0; col < tcm[0].length; col++) {
-                val = ( (double)tcm[row][col] / sum[0] ) 
-                / ( ( (double)sum[row+1] / sum[0] ) * ( Math.pow(sum[col+1],0.75) / Math.pow(sum[0],0.75) ) );
+                v = ( (double)tcm[row][col] / sum[0] ) 
+                / ( r * ( Math.pow(sum[col+1],0.75) / c ) );
                 
-                if(val > 0.0) {
-                    val = Math.log(val) / Math.log(2);
+                if(v > 0.0001) {
+                    v = Math.log(v) / Math.log(2);
                 }
                 
-                val = Math.max(val,0);
+                v = Math.max(v,0);
                 
-                tcm[row][col] = (float)val;
+                tcm[row][col] = (float)v;
                 
                 //System.out.printf("%2.2f ",tcm[row][col]);
             }
@@ -346,6 +343,52 @@ public class Semantic {
     }
     
     //--------------------------------------------------------
+    
+    /** Save a term-context matrix and vocab to disk. */
+    
+    public static void writeTCM(TCM tcm, String filename) {
+        
+        try {
+        
+            FileOutputStream file = new FileOutputStream(filename);
+            ObjectOutputStream out = new ObjectOutputStream(file);
+        
+            out.writeObject(tcm);
+        
+            out.close();
+            file.close();
+        
+        } catch(IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+    }
+    
+    /** Load a term-context matrix and vocab from disk. */
+    
+    public static TCM loadTCM(String filename) {
+        
+        TCM tcm = null;
+    
+        try {
+        
+            FileInputStream file = new FileInputStream(filename);
+            ObjectInputStream in = new ObjectInputStream(file);
+        
+            tcm = (TCM)in.readObject();
+        
+            in.close();
+            file.close();
+        
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        return tcm;
+    
+    }
     
     /** Print the contents of the matrix to the console. */
     
