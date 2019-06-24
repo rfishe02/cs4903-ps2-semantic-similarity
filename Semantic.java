@@ -239,7 +239,10 @@ public class Semantic {
         return ind;
     }  
 
-    /** Uses PPMI to weight all values in the term-context matrix. */
+    /** Uses PPMI to weight all values in the term-context matrix. 
+        This method assumes that the matrix is exactly |V| x |V|.
+        It loops over half of the aray, and calculates the other half at he same time.
+    */
 
     public static void weightTerms(float[][] tcm, int[] sum) {
         
