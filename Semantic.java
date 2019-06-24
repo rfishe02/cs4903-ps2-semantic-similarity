@@ -6,6 +6,9 @@ import java.util.TreeSet;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+
 /** Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line. 
 
     Before it begins, it retreives the vocabulary, which provides the matrix size and index locations 
@@ -241,32 +244,42 @@ public class Semantic {
     public static void weightTerms(float[][] tcm, int[] sum) {
         
         System.out.println("weighing frequencies");
-    
-        double c = Math.pow(sum[0],0.75);
+
+        double e = Math.pow(sum[0],0.75);
         double r;
-        double v;
-        
+        double c;
+
         for(int row = 0; row < tcm.length; row++) {
-        
+            
             r = ( (double)sum[row+1] / sum[0] );
-        
-            for (int col = 0; col < tcm[0].length; col++) {
-                v = ( (double)tcm[row][col] / sum[0] ) 
-                / ( r * ( Math.pow(sum[col+1],0.75) / c ) );
-                
-                if(v > 0.0001) {
-                    v = Math.log(v) / Math.log(2);
-                }
-                
-                v = Math.max(v,0);
-                
-                tcm[row][col] = (float)v;
-                
+            
+            for (int col = row; col < tcm[0].length; col++) {
+     
+                c = ( (double)sum[col+1] / sum[0] );
+     
+                tcm[row][col] = (float)getV( tcm[row][col], r, sum[col+1], sum[0], e );
+                tcm[col][row] = (float)getV( tcm[col][row], c, sum[row+1], sum[0], e );
+                    
                 //System.out.printf("%2.2f ",tcm[row][col]);
             }
             //System.out.println();
         }
 
+    }
+    
+    public static double getV(float a, double b, float c, int d, double e) {
+    
+        double v = ( (double)a / d ) 
+                   / ( b * ( Math.pow( c,0.75 ) / e ) );
+                    
+         if(v > 0.0001) {
+            v = Math.log(v) / Math.log(2);
+         }
+                    
+         v = Math.max(v,0);
+         
+         return v;
+    
     }
     
     /** Calculates cosine similarity, given two rows in the context-term matrix. */
