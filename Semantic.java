@@ -34,8 +34,8 @@ public class Semantic {
                 float[][] tcm = buildTermContextMatrix(args[0],Integer.parseInt(args[1]));
  
                 if(args.length < 4) {
-                    System.out.println("Top 5 Context Words -- " + args[2]);
-                    getContext(tcm,5,u);
+                    System.out.println("top 10 context words -- " + args[2]);
+                    getContext(tcm,10,u);
                 } else {
                 
                     int v = wordSearch(args[3]);
