@@ -34,7 +34,7 @@ public class Semantic {
                 float[][] tcm = buildTermContextMatrix(args[0],Integer.parseInt(args[1]));
  
                 if(args.length < 4) {
-                    System.out.println("top 10 context words -- " + args[2]);
+                    System.out.println("query: top 10 context words -- " + args[2]);
                     getContext(tcm,10,u);
                 } else {
                 
@@ -44,7 +44,7 @@ public class Semantic {
                         System.out.println(args[3] +" not found in vocab.");
                     } else {
 
-                        System.out.println("similarity -- " + args[2] +" & "+ args[3]);
+                        System.out.println("query: similarity -- " + args[2] +" & "+ args[3]);
                         System.out.println(calculateSimilarity(tcm,u,v));
                         
                     }
@@ -70,8 +70,11 @@ public class Semantic {
     */
     
     public static float[][] buildTermContextMatrix(String document, int window) {
+        
+        System.out.println("building term-context matrix");
+        
         float[][] tcm = null;
-
+        
         try {
         
             BufferedReader br = new BufferedReader(new FileReader(document));
@@ -128,6 +131,8 @@ public class Semantic {
     */
     
     public static ArrayList<String> getVocab(String filename) {
+        
+        System.out.println("loading vocab");
         
         try {
             BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -234,6 +239,9 @@ public class Semantic {
     /** Uses PPMI to weight all values in the term-context matrix. */
 
     public static void weightTerms(float[][] tcm, int[] sum) {
+        
+        System.out.println("weighing frequencies");
+    
         double c = Math.pow(sum[0],0.75);
         double r;
         double v;
@@ -286,6 +294,9 @@ public class Semantic {
     */
 
     public static String[] getContext(float[][] tcm, int k, int u) {
+    
+        System.out.println("searching for context");
+    
         PriorityQueue<ResultObj> pq = new PriorityQueue(new ContextComparator());
         String[] res = new String[k];
  
