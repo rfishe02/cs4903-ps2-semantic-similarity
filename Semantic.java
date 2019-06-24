@@ -107,7 +107,6 @@ public class Semantic {
             
             countTerms(tcm,window,prev,next,sum);
  
-            //weightTermsSym(tcm,sum);
             weightTerms(tcm,sum);
             
             //printContextMatrix(vocab,tcm);
@@ -253,6 +252,7 @@ public class Semantic {
             
             for (int col = 0; col < tcm[0].length; col++) {
      
+                //tcm[row][col] = (float)getV( tcm[row][col], sum[row+1], sum[col+1], sum[0], e );
                 tcm[row][col] = (float)getV2( tcm[row][col], sum[row+1], sum[col+1], e );
                     
                 //System.out.printf("%2.2f ",tcm[row][col]);
@@ -262,34 +262,6 @@ public class Semantic {
 
     }
 
-    /** Uses PPMI to weight all values in the term-context matrix. 
-        This method assumes that the matrix is exactly |V| x |V|.
-        It loops over half of the aray, and calculates the other half at he same time.
-        
-        This approach doesn't seem to improve the runtime by much.
-        Making changes to the PPMI calculation had a greater effect.
-    */
-
-    public static void weightTermsSym(float[][] tcm, int[] sum) {
-        
-        System.out.println("weighing frequencies");
-
-        double e = Math.pow(sum[0],0.75);
-        
-        for(int row = 0; row < tcm.length; row++) {
-            
-            for (int col = row; col < tcm[0].length; col++) {
-     
-                tcm[row][col] = (float)getV2( tcm[row][col], sum[row+1], sum[col+1], e );
-                tcm[col][row] = (float)getV2( tcm[col][row], sum[col+1], sum[row+1], e );
-                    
-                //System.out.printf("%2.2f ",tcm[row][col]);
-            }
-            //System.out.println();
-        }
-
-    }
-        
     /** Calculates cosine similarity, given two rows in the context-term matrix. 
         This is written like the exact formula.
     */
