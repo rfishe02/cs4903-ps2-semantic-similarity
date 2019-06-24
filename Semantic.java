@@ -11,35 +11,74 @@ import java.util.PriorityQueue;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line. 
+
+    Before it begins, it retreives the vocabulary, which provides the matrix size and index locations 
+    for each term in the document.
+
+*/
+
 public class Semantic {
 
     static ArrayList<String> vocab;
-    static int window = 4;
-
+ 
     public static void main(String[] args) {
-        
-        float[][] tcm = buildTermContextMatrix(args[0]);
-        
-        int u = wordSearch(args[1]);
-        
-        getContext(tcm,5,u);
 
+        long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+        try {
+        
+            vocab = getVocab(args[0]);
+
+            int u = wordSearch(args[2]);
+            
+            if(u < 0) {
+                System.out.println(args[2] +" not found in vocab.");
+            } else {
+            
+                float[][] tcm = buildTermContextMatrix(args[0],Integer.parseInt(args[1]));
+ 
+                if(args.length < 4) {
+                    System.out.println("Top 5 Context Words -- " + args[2]);
+                    getContext(tcm,5,u);
+                } else {
+                
+                    int v = wordSearch(args[3]);
+                    
+                    if(v < 0) { 
+                        System.out.println(args[3] +" not found in vocab.");
+                    } else {
+
+                        System.out.println("similarity -- " + args[2] +" & "+ args[3]);
+                        System.out.println(calculateSimilarity(tcm,u,v));
+                        
+                    }
+                
+                }
+            
+            }
+        
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        long endMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        System.out.println("end memory usage -- "+(endMemory/1000/1000));
+ 
     }
 
     /** 
         This method accepts a corpus with each term listed on a single line. 
         It packs these terms into segments, which are used to find contextual terms.
-        
-        Before it begins, it retreives the vocabulary, which provides the 
-        matrix size and index locations for each term in the document.
+
     */
     
-    public static float[][] buildTermContextMatrix(String document) {
+    public static float[][] buildTermContextMatrix(String document, int window) {
         float[][] tcm = null;
 
         try {
-            vocab = getVocab(document);
-            
+        
             BufferedReader br = new BufferedReader(new FileReader(document));
             String[] prev = null;
             String[] next = new String[window];
@@ -78,7 +117,7 @@ public class Semantic {
             ex.printStackTrace();
             System.exit(1);
         }
-        
+ 
         return tcm;
     }
  
@@ -114,7 +153,7 @@ public class Semantic {
             ex.printStackTrace();
             System.exit(1);
         }
-        
+
         return vocab;
     }
 
@@ -253,12 +292,12 @@ public class Semantic {
  
         for(int i = 0; i < tcm.length; i++) {
             if(i != u) {
-                pq.add(new ResultObj(vocab.get(i),calculateSimilarity(tcm,u,i)));
+                pq.add(new ResultObj(calculateSimilarity(tcm,u,i),i));
             }
         }
         
         for(int j = 0; j < k; j++) {
-            res[j] = pq.remove().word;
+            res[j] = vocab.get(pq.remove().row);
             System.out.println(res[j]);
         }
     
@@ -294,12 +333,12 @@ public class Semantic {
     
     static class ResultObj {
     
-        String word;
         float score;
+        int row;
         
-        public ResultObj(String word, float score) {
-            this.word = word;
+        public ResultObj(float score, int row) {
             this.score = score;
+            this.row = row;
         }
     
     }
