@@ -9,16 +9,16 @@ import java.util.PriorityQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-/** Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line. 
-
-    Before it begins, it retreives the vocabulary, which provides the matrix size and index locations 
-    for each term in the document.
-
-*/
-
 public class Semantic {
 
     static ArrayList<String> vocab;
+ 
+    /**  
+        The main method retreives the vocabulary. The vocabulary provides the size of the term-context matrix 
+        and the index locations of all terms to other methods.
+        
+        @param args Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line.
+    */
  
     public static void main(String[] args) {
 
@@ -67,9 +67,16 @@ public class Semantic {
     }
 
     /** 
-        This method accepts a corpus with each term listed on a single line. 
-        It packs these terms into segments, which are used to find contextual terms.
-
+        This method uses a document to build a term-context matrix. It requires
+        an ArrayList of strings arranged in alphabetic order (the vocabulary).
+        
+        It packs these terms into segments, which countTerms uses to count contextual terms.
+        After the term-context matrix is complete, the method weightTerms calculate the PPMI for 
+        each value.
+        
+        @param document A document of tokens, with each listed on a single line.
+        @param window The window size for context.
+        @return A complete term-context matrix.
     */
     
     public static float[][] buildTermContextMatrix(String document, int window) {
@@ -131,6 +138,9 @@ public class Semantic {
         
         The wordSearch method uses a binary search on the ArrayList to find
         an index for a given word.
+        
+        @param filename A document of tokens, with each listed on a single line.
+        @return An array of terms arraned in alphabetic order.
     */
     
     public static ArrayList<String> getVocab(String filename) {
@@ -164,6 +174,12 @@ public class Semantic {
     It uses two loops with variables and offset values to find the 
     contextual terms for each word in the segment. It also finds the contextual terms 
     that overlap between two separate segments.
+    
+    @param tcm A new term-context matrix.
+    @param window The window size for context.
+    @param prev The last segment created by buildTermContextMatrix.
+    @param next The newest segment created by builtTermContextMatrix.
+    @param sum An array to store aggregated frequencies.
     */
     
     public static void countTerms(float[][] tcm, int window, String[] prev, String[] next, int[] sum) {
@@ -214,6 +230,9 @@ public class Semantic {
     However, it takes logarithmic time rather than constant time.
     
     The method returns the index of the String as the column reference.
+    
+    @param target The desired term in the vocabulary.
+    @return The index for a term in the term-context matrix.
     */
     
     public static int wordSearch(String target) {
@@ -240,6 +259,9 @@ public class Semantic {
     }  
     
     /** Uses PPMI to weight all values in the term-context matrix. 
+    
+    @param tcm A complete term-context matrix.
+    @param sum An array of aggregated frequencies from the term-context matrix.
     */
     
     public static void weightTerms(float[][] tcm, int[] sum) {
@@ -264,6 +286,12 @@ public class Semantic {
 
     /** Calculates cosine similarity, given two rows in the context-term matrix. 
         This is written like the exact formula.
+        
+        @param a The numerator of the formula.
+        @param b The leftmost term in the denominator.
+        @param d The total frequencies of all entries in the term-context matrix.
+        @param e A pre-calculated value for the denominator of the rightmost term in the equation.
+        @return The value PPMI.
     */
     
     public static double getV(float a, double b, float c, int d, double e) {
@@ -283,6 +311,12 @@ public class Semantic {
     
     /** Calculates cosine similarity, given two rows in the context-term matrix. 
         This version was re-written to avoid extra division.
+        
+        @param a The numerator.
+        @param b The leftmost term in the denominator.
+        @param c The rightmost term in the denominator.
+        @param e A pre-calculated value for the denominator of the rightmost term in the equation.
+        @return The value PPMI.
     */
     
     public static double getV2(float a, float b, float c, double e) {
@@ -299,7 +333,13 @@ public class Semantic {
     
     }
     
-    /** Calculates cosine similarity, given two rows in the context-term matrix. */
+    /** Calculates cosine similarity, given two rows in the context-term matrix. 
+    
+        @param tcm A complete term-context matrix.
+        @param u The word in question.
+        @param v A term in the vocabulary.
+        @return The value cosine similarity.
+    */
     
     // try to use threads here.
     
@@ -321,6 +361,11 @@ public class Semantic {
     Look through V, the rows of the tcm matrix, to find the contextual words.
     It assumes that the ith row in the tcm matrix represents the ith word in V, which is in alphabetic order.
     This method uses a priority queue to return the k most similiar words. 
+    
+    @param tcm  A complete term-context matrix.
+    @param k The number of desired context words.
+    @param u The word in question.
+    @return A list of the top k context words.
     */
 
     public static String[] getContext(float[][] tcm, int k, int u) {
@@ -385,7 +430,9 @@ public class Semantic {
     
     //--------------------------------------------------------
     
-    /** Save a term-context matrix and vocab to disk. */
+    /** Save a term-context matrix and vocab to disk. 
+        This hasn't been implemented in this application.
+    */
     
     public static void writeTCM(TCM tcm, String filename) {
         
@@ -406,7 +453,9 @@ public class Semantic {
         
     }
     
-    /** Load a term-context matrix and vocab from disk. */
+    /** Load a term-context matrix and vocab from disk. 
+        This hasn't been implemented in this application.
+    */
     
     public static TCM loadTCM(String filename) {
         
