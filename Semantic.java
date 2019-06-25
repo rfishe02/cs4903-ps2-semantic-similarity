@@ -1,4 +1,11 @@
 
+/********************************
+Name: Renae Fisher
+Username: text05
+Problem Set: PS2
+Due Date: 6/24/19
+********************************/
+
 import java.io.*;
 import java.util.Iterator;
 import java.util.Comparator;
@@ -430,56 +437,6 @@ public class Semantic {
     
     //--------------------------------------------------------
     
-    /** Save a term-context matrix and vocab to disk. 
-        This hasn't been implemented in this application.
-    */
-    
-    public static void writeTCM(TCM tcm, String filename) {
-        
-        try {
-        
-            FileOutputStream file = new FileOutputStream(filename);
-            ObjectOutputStream out = new ObjectOutputStream(file);
-        
-            out.writeObject(tcm);
-        
-            out.close();
-            file.close();
-        
-        } catch(IOException ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
-        
-    }
-    
-    /** Load a term-context matrix and vocab from disk. 
-        This hasn't been implemented in this application.
-    */
-    
-    public static TCM loadTCM(String filename) {
-        
-        TCM tcm = null;
-    
-        try {
-        
-            FileInputStream file = new FileInputStream(filename);
-            ObjectInputStream in = new ObjectInputStream(file);
-        
-            tcm = (TCM)in.readObject();
-        
-            in.close();
-            file.close();
-        
-        } catch(Exception ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
-        
-        return tcm;
-    
-    }
-    
     /** Print the contents of the matrix to the console. */
     
     public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
@@ -524,5 +481,48 @@ public class Semantic {
             System.out.println();
         }
     }
+    
+    /*
+    public static void writeTCM(TCM tcm, String filename) {
+        
+        try {
+        
+            FileOutputStream file = new FileOutputStream(filename);
+            ObjectOutputStream out = new ObjectOutputStream(file);
+        
+            out.writeObject(tcm);
+        
+            out.close();
+            file.close();
+        
+        } catch(IOException ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+    }
+
+    public static TCM loadTCM(String filename) {
+        
+        TCM tcm = null;
+    
+        try {
+        
+            FileInputStream file = new FileInputStream(filename);
+            ObjectInputStream in = new ObjectInputStream(file);
+        
+            tcm = (TCM)in.readObject();
+        
+            in.close();
+            file.close();
+        
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        return tcm;
+    
+    }*/
     
 }
