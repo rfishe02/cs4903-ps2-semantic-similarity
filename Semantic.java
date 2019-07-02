@@ -150,6 +150,9 @@ public class Semantic {
     @return An array of terms arraned in alphabetic order.
   */
 
+  // REWRITE THIS TO USE THE DICT.RAF INSTEAD OF AN ARRAYLIST. IT USES TERM TO
+  // GET THE TERM NUM, WHICH CORRESPODNS TO AN INDEX IN THE TCM.
+
   public static ArrayList<String> getVocab(String filename) {
 
     System.out.println("loading vocab");
