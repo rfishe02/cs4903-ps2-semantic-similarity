@@ -28,7 +28,7 @@ public class Semantic {
 
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-    TCM data = null;
+    TCM data = new TCM();
     boolean rebuild = false;
 
     try {
@@ -39,9 +39,10 @@ public class Semantic {
       String filename = in.getName()+".obj";
 
       if( new File( filename ).exists() ) {
+        System.out.println("retreiving "+filename);
         data = loadTCM( filename );
 
-        if( (System.currentTimeMillis()/1000) - (data.time/1000) > 86400 ) {
+        if( (System.currentTimeMillis()/1000) - (data.time/1000) > 14400 ) {
           rebuild = true;
         }
       } else {
@@ -81,7 +82,11 @@ public class Semantic {
           }
       }
 
-      writeTCM(data,filename);
+      if(! new File( filename ).exists() || rebuild) {
+        System.out.println("saving "+filename);
+        data.setTime(System.currentTimeMillis());
+        writeTCM(data,filename);
+      }
 
     } catch(Exception ex) {
         ex.printStackTrace();
