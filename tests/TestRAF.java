@@ -6,7 +6,7 @@ public class TestRAF {
 
   public static void main (String[] args) {
 
-    int[][] block = new int[5][5];
+    int[][] block = new int[2][5];
 
     try {
 
@@ -16,18 +16,18 @@ public class TestRAF {
 
 
 
-      for(int i = 0; i < (test.length()/4)/(block.length * block.length); i++) {
+      for(int i = 0; i < (test.length()/4)/(block.length * block[0].length); i++) {
 
         System.out.println(i);
 
         for(int a = 0; a < block.length; a++) {
-          for(int b = 0; b < block.length; b++) {
+          for(int b = 0; b < block[0].length; b++) {
             block[a][b] = test.readInt();
           }
         }
 
         for(int x = 0; x < block.length; x++) {
-          for(int y = 0; y < block.length; y++) {
+          for(int y = 0; y < block[0].length; y++) {
             System.out.print(block[x][y]+" ");
           }
           System.out.println();

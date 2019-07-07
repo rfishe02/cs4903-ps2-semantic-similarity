@@ -33,8 +33,7 @@ public class Semantic {
 
     try {
 
-      /* Retreive a new vocab & term context matrix if it's older than several hours. */
-
+      /* Retreive a new vocab & term context matrix if it's older than several hours.
       File in = new File(args[0]);
       String filename = in.getName()+".obj";
 
@@ -47,15 +46,16 @@ public class Semantic {
         }
       } else {
         rebuild = true;
-      } // Load the TCM, or build a new one.
+      } */
 
+      rebuild = true;
       if(rebuild) {
         ArrayList<String> vocab = getVocab(in);
         float[][] tcm = buildTermContextMatrix( in,vocab,vocab.size(),Integer.parseInt(args[1]) );
 
         data.setVocab(vocab);
         data.setTCM(tcm);
-      }
+      } // It's faster to build an entire new matrix each time.
 
       /*-----------------------------------------------------------------------------*/
 
@@ -82,11 +82,13 @@ public class Semantic {
           }
       }
 
+      /*
       if(! new File( filename ).exists() || rebuild) {
         System.out.println("saving "+filename);
         data.setTime(System.currentTimeMillis());
         writeTCM(data,filename);
-      }
+      } // This takes a long time.
+      */
 
     } catch(Exception ex) {
         ex.printStackTrace();
