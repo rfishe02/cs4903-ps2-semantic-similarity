@@ -108,11 +108,11 @@ public class Semantic {
 
       for(File f : files) {
 
-        br = new BufferedReader(new FileReader(f));
         prev = null;
         next = new String[window];
         i = 0;
 
+        br = new BufferedReader(new FileReader(f));
         while((read=br.readLine())!=null) {
           next[i] = read;
           i++;
@@ -120,16 +120,22 @@ public class Semantic {
           if(i == window) {
 
             if(prev != null) {
-              countTerms(tcm,window,i,prev,next,sum);
+              countTerms(tcm,sum,prev,next,window,i); // Begin to count overlapping terms.
             }
 
             i = 0;
             prev = next;
             next = new String[window];
           }
+
         }
 
-        countTerms(tcm,window,i,prev,next,sum);
+        countTerms(tcm,sum,prev,next,window,i);
+
+        if(prev != null && i < window) {
+          countTerms(tcm,sum,null,next,window,i);
+        } // The case where there are leftover terms.
+
         br.close();
 
       }
@@ -212,39 +218,36 @@ public class Semantic {
     @param sum An array to store aggregated frequencies.
   */
 
-  public static void countTerms(float[][] tcm, int window, int size, String[] prev, String[] next, int[] sum) {
-    String[] sec = (prev == null) ? next: prev;
-    int limit = (prev == null) ? size : window;
+  public static void countTerms(float[][] tcm, int[] sum, String[] prev, String[] next, int pLim, int nLim) {
+
+    String[] comp = (prev == null) ? next : prev;
+    int lim = (prev == null) ? nLim : pLim ;
     int off = 0;
-    int w1, w2;
 
-    for(int out = 0; out < limit; out++) {
-      for(int in = 0; in < limit-out; in++) {
+    for(int out = 0; out < lim; out++) {
+      for(int in = 0; in < lim-out; in++) {
 
-        if(in < limit-(out+1)) {
-          w1 = wordSearch(sec[in]);
-          w2 = wordSearch(sec[in+(out+1)]);
-
-          tcm[ w1 ][ w2 ] ++ ;
-          tcm[ w2 ][ w1 ] ++ ;
-          sum[ w1 + 1 ] ++; // Count sum, which is used to weight terms.
-          sum[ w2 + 1 ] ++;
-          sum[0] += 2;
+        if(in < lim-(out+1)) {
+          addFreq(tcm,sum, wordSearch(comp[in]), wordSearch(comp[in+(out+1)]));
+          System.out.println(comp[in]+": "+in+"    "+comp[in+(out+1)]+": "+(in+(out+1)));
         }
 
-        if(sec[in+off] != null && next[out] != null) {
-          w1 = wordSearch(sec[in+off]);
-          w2 = wordSearch(next[out]);
-
-          tcm[ w1 ][ w2 ] ++ ;
-          tcm[ w2 ][ w1 ] ++ ;
-          sum[ w1 + 1 ] ++;
-          sum[ w2 + 1 ] ++;
-          sum[0] += 2;
+        if(prev != null && comp[in+off] != null && next[out] != null) {
+          addFreq(tcm,sum,wordSearch(comp[in+off]), wordSearch(next[out]));
+          System.out.println(comp[(in+off)]+": "+(in+off)+"    "+comp[out]+": "+out);
         }
+
       }
       off+=1;
     }
+  }
+
+  public static void addFreq(float[][] tcm, int[] sum, int w1, int w2) {
+    tcm[ w1 ][ w2 ] ++ ;
+    tcm[ w2 ][ w1 ] ++ ;
+    sum[ w1 + 1 ] ++; // Count sum, which is used to weight terms.
+    sum[ w2 + 1 ] ++;
+    sum[0] += 2;
   }
 
   /**
