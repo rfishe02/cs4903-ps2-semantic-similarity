@@ -219,7 +219,6 @@ public class Semantic {
   */
 
   public static void countTerms(float[][] tcm, int[] sum, String[] prev, String[] next, int pLim, int nLim) {
-
     String[] comp = (prev == null) ? next : prev;
     int lim = (prev == null) ? nLim : pLim ;
     int off = 0;
@@ -228,14 +227,14 @@ public class Semantic {
       for(int in = 0; in < lim-out; in++) {
 
         if(in < lim-(out+1)) {
-          addFreq(tcm,sum, wordSearch(comp[in]), wordSearch(comp[in+(out+1)]));
-          System.out.println(comp[in]+": "+in+"    "+comp[in+(out+1)]+": "+(in+(out+1)));
+          addFreq(tcm,sum, wordSearch(comp[in]), wordSearch(comp[in+(out+1)]) );
+          //System.out.println(comp[in]+": "+in+"    "+comp[in+(out+1)]+": "+(in+(out+1)));
         }
 
         if(prev != null && comp[in+off] != null && next[out] != null) {
-          addFreq(tcm,sum,wordSearch(comp[in+off]), wordSearch(next[out]));
-          System.out.println(comp[(in+off)]+": "+(in+off)+"    "+comp[out]+": "+out);
-        }
+          addFreq(tcm,sum, wordSearch(comp[in+off]), wordSearch(next[out]) );
+          //System.out.println(comp[(in+off)]+": "+(in+off)+"    "+comp[out]+": "+out);
+        } // If prev is null, do not count overlapping terms.
 
       }
       off+=1;
