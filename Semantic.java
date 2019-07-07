@@ -24,22 +24,14 @@ public class Semantic {
   /**
     The main method retreives the vocabulary. The vocabulary provides the size of the term-context matrix
     and the index locations of all terms to other methods.
-
     @param args Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line.
   */
 
   public static void main(String[] args) {
 
-    /*
-    args = new String[3];
-    args[0] = "input";
-    args[1] = "4";
-    args[2] = "roses";*/
-
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
     try {
-
       vocab = getVocab(new File(args[0]));
       int u = wordSearch(args[2]);
 
@@ -84,7 +76,6 @@ public class Semantic {
     It packs these terms into segments, which countTerms uses to count contextual terms.
     After the term-context matrix is complete, the method weightTerms calculate the PPMI for
     each value.
-
     @param inDir A directory of tiles, with lists of tokens.
     @param window The window size for context.
     @return A complete term-context matrix.
@@ -100,7 +91,7 @@ public class Semantic {
     System.out.println("building term-context matrix of "+vocab.size()+" x "+vocab.size());
 
     float[][] tcm = new float[vocab.size()][vocab.size()];
-    sum = new int[vocab.size() + 1]; // Should I store the sum?
+    sum = new int[vocab.size() + 1];
 
     try {
       File[] files = inDir.listFiles();
@@ -161,13 +152,11 @@ public class Semantic {
 
     The wordSearch method uses a binary search on the ArrayList to find
     an index for a given word.
-
     @param inDir A directory of tiles, with lists of tokens.
     @return An array of terms arraned in alphabetic order.
   */
 
   public static ArrayList<String> getVocab(File inDir) {
-
     System.out.println("loading vocab");
 
     try {
@@ -204,13 +193,14 @@ public class Semantic {
   /**
     It uses two loops with variables and offset values to find the
     contextual terms for each word in the segment. It also finds the contextual terms
-    that overlap between two separate segments.
-
+    that overlap between two separate segments. If there is no previous segment, it finds
+    the contextual terms within a single segment.
     @param tcm A new term-context matrix.
-    @param window The window size for context.
+    @param sum An array to store aggregated frequencies.
     @param prev The last segment created by buildTermContextMatrix.
     @param next The newest segment created by builtTermContextMatrix.
-    @param sum An array to store aggregated frequencies.
+    @param pLim The limit used when the two segments are of equal size.
+    @param nLim The limit used when a null value is passed through prev.
   */
 
   public static void countTerms(float[][] tcm, int[] sum, String[] prev, String[] next, int pLim, int nLim) {
@@ -250,7 +240,6 @@ public class Semantic {
     However, it takes logarithmic time rather than constant time.
 
     The method returns the index of the String as the column reference.
-
     @param target The desired term in the vocabulary.
     @return The index for a term in the term-context matrix.
   */
@@ -293,8 +282,6 @@ public class Semantic {
     for(int row = 0; row < tcm.length; row++) {
 
       for (int col = 0; col < tcm[0].length; col++) {
-
-        //tcm[row][col] = (float)getV( tcm[row][col], sum[row+1], sum[col+1], sum[0], e );
         tcm[row][col] = (float)getV2( tcm[row][col], sum[row+1], sum[col+1], e );
 
         //System.out.printf("%2.2f ",tcm[row][col]);
@@ -315,18 +302,15 @@ public class Semantic {
   */
 
   public static double getV(float a, double b, float c, int d, double e) {
-
     double v = ( (double)a / d )
                / ( (b / d) * ( Math.pow( c,0.75 ) / e ) );
 
     if(v > 0.0001) {
       v = Math.log(v) / Math.log(2);
     }
-
     v = Math.max(v,0);
 
     return v;
-
   }
 
   /** Calculates cosine similarity, given two rows in the context-term matrix.
@@ -340,17 +324,14 @@ public class Semantic {
   */
 
   public static double getV2(float a, float b, float c, double e) {
-
     double v = (double)a / ( b * ( Math.pow( c,0.75 ) / e ) );
 
     if(v > 0.000001) {
       v = Math.log(v) / Math.log(2);
     }
-
     v = Math.max(v,0);
 
     return v;
-
   }
 
   /** Calculates cosine similarity, given two rows in the context-term matrix.
@@ -360,8 +341,6 @@ public class Semantic {
     @param v A term in the vocabulary.
     @return The value cosine similarity.
   */
-
-  // try to use threads here.
 
   public static float calculateSimilarity( float[][] tcm, int u, int v ) {
     double one = 0.0;
@@ -389,7 +368,6 @@ public class Semantic {
   */
 
   public static String[] getContext(float[][] tcm, int k, int u) {
-
     System.out.println("searching for context");
 
     PriorityQueue<ResultObj> pq = new PriorityQueue<>(new ContextComparator());
@@ -410,9 +388,6 @@ public class Semantic {
 
     return res;
   }
-
-  //--------------------------------------------------------
-  // CUSTOM CLASSES
 
   /** The TreeMap in getVocab uses this class to arrange terms in alphabetic order. */
 
@@ -439,7 +414,6 @@ public class Semantic {
   /** This class stores the results for the getContext method. */
 
   static class ResultObj {
-
     float score;
     int row;
 
@@ -447,7 +421,6 @@ public class Semantic {
       this.score = score;
       this.row = row;
     }
-
   }
 
   //--------------------------------------------------------
@@ -455,7 +428,6 @@ public class Semantic {
   /** Print the contents of the matrix to the console. */
 
   public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
-
     System.out.printf("%10s ","");
     for(String s : vocab) {
       System.out.printf("%8s ",s);
@@ -475,7 +447,6 @@ public class Semantic {
         colNum++;
 
         System.out.printf("%8.2f ",matrix[i][j]);
-
       }
       System.out.println();
     }
@@ -484,7 +455,6 @@ public class Semantic {
   /** Print the contents of the sums array. */
 
   public static void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
-
     for(int i = 0; i < vocab.size(); i++) {
 
       for(int j = 0; j < vocab.size(); j++) {
