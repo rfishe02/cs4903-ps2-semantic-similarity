@@ -86,47 +86,55 @@ public class Semantic {
     @return A complete term-context matrix.
   */
 
-  public static float[][] buildTermContextMatrix(String document, int window) {
+  public static float[][] buildTermContextMatrix(File inDir, int window) {
+    BufferedReader br;
+    String[] prev;
+    String[] next;
+    String read;
+    int i;
 
     System.out.println("building term-context matrix of "+vocab.size()+" x "+vocab.size());
 
-    float[][] tcm = null;
+    float[][] tcm = new float[vocab.size()][vocab.size()];
+    int[] sum = new int[vocab.size() + 1]; // Should I store the sum? (What about threading?)
 
     try {
 
-      BufferedReader br = new BufferedReader(new FileReader(document));
-      String[] prev = null;
-      String[] next = new String[window];
-      tcm = new float[vocab.size()][vocab.size()];
-      String read;
-      int i = 0;
+      File[] files = inDir.listFiles();
 
-      int[] sum = new int[vocab.size() + 1]; // Should I store the sum? (What about threading?)
+      for(File f : files) {
 
-      while((read=br.readLine())!=null) {
-        next[i] = read;
-        i++;
+        br = new BufferedReader(new FileReader(f));
+        prev = null;
+        next = new String[window];
+        read;
+        i = 0;
 
-        if(i == window) {
+        while((read=br.readLine())!=null) {
+          next[i] = read;
+          i++;
 
-          if(prev != null) {
-            countTerms(tcm,window,prev,next,sum);
+          if(i == window) {
+
+            if(prev != null) {
+              countTerms(tcm,window,prev,next,sum);
+            }
+
+            i = 0;
+            prev = next;
+            next = new String[window];
           }
-
-          i = 0;
-          prev = next;
-          next = new String[window];
         }
-      }
 
-      countTerms(tcm,window,prev,next,sum);
+        countTerms(tcm,window,prev,next,sum);
+        br.close();
+
+      }
 
       weightTerms(tcm,sum);
 
       //printContextMatrix(vocab,tcm);
       //printSums(vocab,tcm,sum);
-
-      br.close();
 
     } catch(IOException ex) {
         ex.printStackTrace();
