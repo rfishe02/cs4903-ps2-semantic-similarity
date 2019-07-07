@@ -29,11 +29,6 @@ public class Semantic {
 
   public static void main(String[] args) {
 
-    args = new String[3];
-    args[0] = "input";
-    args[1] = "4";
-    args[2] = "roses";
-
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
     try {
