@@ -29,6 +29,12 @@ public class Semantic {
 
   public static void main(String[] args) {
 
+    /*
+    args = new String[3];
+    args[0] = "input";
+    args[1] = "4";
+    args[2] = "roses";*/
+
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
     try {
@@ -135,9 +141,9 @@ public class Semantic {
 
       }
 
-      //weightTerms(tcm,sum);
+      weightTerms(tcm,sum);
 
-      printContextMatrix(vocab,tcm);
+      //printContextMatrix(vocab,tcm);
       //printSums(vocab,tcm,sum);
 
     } catch(IOException ex) {
@@ -286,7 +292,7 @@ public class Semantic {
 
   public static void weightTerms(float[][] tcm, int[] sum) {
 
-    System.out.println("weighing frequencies");
+    System.out.println("applying weights to frequencies");
 
     double e = Math.pow(sum[0],0.75);
 
@@ -343,11 +349,11 @@ public class Semantic {
 
     double v = (double)a / ( b * ( Math.pow( c,0.75 ) / e ) );
 
-    if(v > 0.001) {
+    if(v > 0.000001) {
       v = Math.log(v) / Math.log(2);
     }
 
-   v = Math.max(v,0);
+    v = Math.max(v,0);
 
     return v;
 
