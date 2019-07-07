@@ -19,6 +19,7 @@ import java.util.concurrent.FutureTask;
 public class Semantic {
 
   static ArrayList<String> vocab;
+  static int[] sum;
 
   /**
     The main method retreives the vocabulary. The vocabulary provides the size of the term-context matrix
@@ -62,11 +63,9 @@ public class Semantic {
 
               System.out.println("query: similarity -- " + args[2] +" & "+ args[3]);
               System.out.println(calculateSimilarity(tcm,u,v));
-
             }
-
+            
           }
-
       }
 
     } catch(Exception ex) {
@@ -102,7 +101,7 @@ public class Semantic {
     System.out.println("building term-context matrix of "+vocab.size()+" x "+vocab.size());
 
     float[][] tcm = new float[vocab.size()][vocab.size()];
-    int[] sum = new int[vocab.size() + 1]; // Should I store the sum? (What about threading?)
+    sum = new int[vocab.size() + 1]; // Should I store the sum?
 
     try {
       File[] files = inDir.listFiles();
