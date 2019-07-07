@@ -1,0 +1,8 @@
+
+free --human
+
+-Xms<size> #set initial heap size
+-Xmx<size> #set max heap size
+-Xss<size> #set java thread stack size
+
+java -Xmx10g Semantic ../clean/output 4 "dog"

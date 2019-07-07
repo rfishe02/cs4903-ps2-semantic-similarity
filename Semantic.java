@@ -75,7 +75,7 @@ public class Semantic {
     }
 
     long endMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-    System.out.println("end memory usage -- "+(endMemory/1000/1000));
+    System.out.println("end memory usage -- "+(endMemory/1000/1000/1000)+" GB");
 
   }
 
