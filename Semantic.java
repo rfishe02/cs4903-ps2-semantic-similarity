@@ -29,6 +29,11 @@ public class Semantic {
 
   public static void main(String[] args) {
 
+    args = new String[3];
+    args[0] = "input";
+    args[1] = "4";
+    args[2] = "roses";
+
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
     try {
@@ -129,9 +134,9 @@ public class Semantic {
 
       }
 
-      weightTerms(tcm,sum);
+      //weightTerms(tcm,sum);
 
-      //printContextMatrix(vocab,tcm);
+      printContextMatrix(vocab,tcm);
       //printSums(vocab,tcm,sum);
 
     } catch(IOException ex) {
@@ -208,48 +213,34 @@ public class Semantic {
   */
 
   public static void countTerms(float[][] tcm, int window, int size, String[] prev, String[] next, int[] sum) {
-
-    String[] sec = next;
-    if(prev != null) {
-      sec = prev;
-    }
-
-    int limit = Math.min(window,size);
+    String[] sec = (prev == null) ? next: prev;
+    int limit = (prev == null) ? size : window;
     int off = 0;
     int w1, w2;
 
     for(int out = 0; out < limit; out++) {
-
       for(int in = 0; in < limit-out; in++) {
 
         if(in < limit-(out+1)) {
-
           w1 = wordSearch(sec[in]);
           w2 = wordSearch(sec[in+(out+1)]);
 
           tcm[ w1 ][ w2 ] ++ ;
           tcm[ w2 ][ w1 ] ++ ;
-
           sum[ w1 + 1 ] ++; // Count sum, which is used to weight terms.
           sum[ w2 + 1 ] ++;
           sum[0] += 2;
-
-          //System.out.println(i+": "+prev[i]+" "+(i+(a+1))+": "+prev[i+(a+1)]);
         }
 
-        if(tmp[in+off] != null && next[out] != null) {
-
-          w1 = wordSearch(tmp[in+off]);
+        if(sec[in+off] != null && next[out] != null) {
+          w1 = wordSearch(sec[in+off]);
           w2 = wordSearch(next[out]);
 
           tcm[ w1 ][ w2 ] ++ ;
           tcm[ w2 ][ w1 ] ++ ;
-
           sum[ w1 + 1 ] ++;
           sum[ w2 + 1 ] ++;
           sum[0] += 2;
-
-          //System.out.println((i+b)+": "+prev[i+b]+" "+a+": "+next[a]);
         }
       }
       off+=1;
@@ -329,7 +320,7 @@ public class Semantic {
   public static double getV(float a, double b, float c, int d, double e) {
 
     double v = ( (double)a / d )
-               / ( ((double)b / d) * ( Math.pow( c,0.75 ) / e ) );
+               / ( (b / d) * ( Math.pow( c,0.75 ) / e ) );
 
     if(v > 0.0001) {
       v = Math.log(v) / Math.log(2);
@@ -355,7 +346,7 @@ public class Semantic {
 
     double v = (double)a / ( b * ( Math.pow( c,0.75 ) / e ) );
 
-    if(v > 0.0001) {
+    if(v > 0.001) {
       v = Math.log(v) / Math.log(2);
     }
 
@@ -404,7 +395,7 @@ public class Semantic {
 
     System.out.println("searching for context");
 
-    PriorityQueue<ResultObj> pq = new PriorityQueue(new ContextComparator());
+    PriorityQueue<ResultObj> pq = new PriorityQueue<>(new ContextComparator());
     String[] res = new String[k];
 
     for(int i = 0; i < tcm.length; i++) {
@@ -413,9 +404,11 @@ public class Semantic {
       }
     }
 
-    for(int j = 0; j < k; j++) {
+    int j = 0;
+    while(j < k && !pq.isEmpty()) {
       res[j] = vocab.get(pq.remove().row);
       System.out.println(res[j]);
+      j++;
     }
 
     return res;
