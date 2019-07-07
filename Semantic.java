@@ -33,7 +33,7 @@ public class Semantic {
 
     try {
 
-      vocab = getVocab(args[0]);
+      vocab = getVocab(new File(args[0]));
 
       int u = wordSearch(args[2]);
 
@@ -41,7 +41,7 @@ public class Semantic {
         System.out.println(args[2] +" not found in vocab.");
       } else {
 
-          float[][] tcm = buildTermContextMatrix(args[0],Integer.parseInt(args[1]));
+          float[][] tcm = buildTermContextMatrix(new File(args[0]),Integer.parseInt(args[1]));
 
           if(args.length < 4) {
             System.out.println("query: top 10 context words -- " + args[2]);
@@ -99,7 +99,6 @@ public class Semantic {
     int[] sum = new int[vocab.size() + 1]; // Should I store the sum? (What about threading?)
 
     try {
-
       File[] files = inDir.listFiles();
 
       for(File f : files) {
@@ -107,7 +106,6 @@ public class Semantic {
         br = new BufferedReader(new FileReader(f));
         prev = null;
         next = new String[window];
-        read;
         i = 0;
 
         while((read=br.readLine())!=null) {
@@ -117,7 +115,7 @@ public class Semantic {
           if(i == window) {
 
             if(prev != null) {
-              countTerms(tcm,window,prev,next,sum);
+              countTerms(tcm,window,i,prev,next,sum);
             }
 
             i = 0;
@@ -126,7 +124,7 @@ public class Semantic {
           }
         }
 
-        countTerms(tcm,window,prev,next,sum);
+        countTerms(tcm,window,i,prev,next,sum);
         br.close();
 
       }
@@ -162,19 +160,27 @@ public class Semantic {
   // WHICH MAPS TO AN INDEX IN THE TCM. THIS WOULD CREATE A TRADE OFF OF MORE IO TIME, HOWEVER.
   // WOULD IT REALLY BE BEST TO PERFORM EXCESSIVE IO AT THIS TIME?
 
-  public static ArrayList<String> getVocab(String filename) {
+  public static ArrayList<String> getVocab(File inDir) {
 
     System.out.println("loading vocab");
 
     try {
-      BufferedReader br = new BufferedReader(new FileReader(filename));
       TreeSet<String> set = new TreeSet<>(new VocabComparator());
-      vocab = new ArrayList<>(set.size());
+      BufferedReader br;
       String read;
 
-      while((read = br.readLine())!=null) {
-        set.add(read);
+      File[] files = inDir.listFiles();
+      for(File f : files) {
+
+        br = new BufferedReader(new FileReader(f));
+        while((read = br.readLine())!=null) {
+          set.add(read);
+        }
+
+        br.close();
       }
+
+      vocab = new ArrayList<>(set.size());
 
       Iterator<String> it = set.iterator();
       while(it.hasNext()) {
@@ -201,18 +207,25 @@ public class Semantic {
     @param sum An array to store aggregated frequencies.
   */
 
-  public static void countTerms(float[][] tcm, int window, String[] prev, String[] next, int[] sum) {
-    int b = 0;
+  public static void countTerms(float[][] tcm, int window, int size, String[] prev, String[] next, int[] sum) {
+
+    String[] sec = next;
+    if(prev != null) {
+      sec = prev;
+    }
+
+    int limit = Math.min(window,size);
+    int off = 0;
     int w1, w2;
 
-    for(int a = 0; a < window; a++) {
+    for(int out = 0; out < limit; out++) {
 
-      for(int i = 0; i < prev.length-a; i++) {
+      for(int in = 0; in < limit-out; in++) {
 
-        if(i < prev.length-(a+1)) {
+        if(in < limit-(out+1)) {
 
-          w1 = wordSearch(prev[i]);
-          w2 = wordSearch(prev[i+(a+1)]);
+          w1 = wordSearch(sec[in]);
+          w2 = wordSearch(sec[in+(out+1)]);
 
           tcm[ w1 ][ w2 ] ++ ;
           tcm[ w2 ][ w1 ] ++ ;
@@ -224,10 +237,10 @@ public class Semantic {
           //System.out.println(i+": "+prev[i]+" "+(i+(a+1))+": "+prev[i+(a+1)]);
         }
 
-        if(prev[i+b] != null && next[a] != null) {
+        if(tmp[in+off] != null && next[out] != null) {
 
-          w1 = wordSearch(prev[i+b]);
-          w2 = wordSearch(next[a]);
+          w1 = wordSearch(tmp[in+off]);
+          w2 = wordSearch(next[out]);
 
           tcm[ w1 ][ w2 ] ++ ;
           tcm[ w2 ][ w1 ] ++ ;
@@ -239,7 +252,7 @@ public class Semantic {
           //System.out.println((i+b)+": "+prev[i+b]+" "+a+": "+next[a]);
         }
       }
-      b+=1;
+      off+=1;
     }
   }
 
