@@ -89,6 +89,7 @@ public class Semantic {
     int i;
 
     System.out.println("building term-context matrix of "+vocab.size()+" x "+vocab.size());
+    System.out.println(inDir.getName());
 
     float[][] tcm = new float[vocab.size()][vocab.size()];
     sum = new int[vocab.size() + 1];
@@ -263,7 +264,6 @@ public class Semantic {
       }
 
     }
-
     return ind;
   }
 
@@ -282,7 +282,10 @@ public class Semantic {
     for(int row = 0; row < tcm.length; row++) {
 
       for (int col = 0; col < tcm[0].length; col++) {
-        tcm[row][col] = (float)getV2( tcm[row][col], sum[row+1], sum[col+1], e );
+
+        if(tcm[row][col] > 0.00001) {
+          tcm[row][col] = (float)getV2( tcm[row][col], sum[row+1], sum[col+1], e );
+        } // Only weight the terms above a certain threshold (not zero).
 
         //System.out.printf("%2.2f ",tcm[row][col]);
       }
@@ -305,7 +308,7 @@ public class Semantic {
     double v = ( (double)a / d )
                / ( (b / d) * ( Math.pow( c,0.75 ) / e ) );
 
-    if(v > 0.0001) {
+    if(v > 0.00001) {
       v = Math.log(v) / Math.log(2);
     }
     v = Math.max(v,0);
@@ -326,7 +329,7 @@ public class Semantic {
   public static double getV2(float a, float b, float c, double e) {
     double v = (double)a / ( b * ( Math.pow( c,0.75 ) / e ) );
 
-    if(v > 0.000001) {
+    if(v > 0.00001) {
       v = Math.log(v) / Math.log(2);
     }
     v = Math.max(v,0);
