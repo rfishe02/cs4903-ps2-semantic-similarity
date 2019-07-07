@@ -41,7 +41,6 @@ public class Semantic {
     try {
 
       vocab = getVocab(new File(args[0]));
-
       int u = wordSearch(args[2]);
 
       if(u < 0) {
@@ -64,7 +63,7 @@ public class Semantic {
               System.out.println("query: similarity -- " + args[2] +" & "+ args[3]);
               System.out.println(calculateSimilarity(tcm,u,v));
             }
-            
+
           }
       }
 
@@ -86,7 +85,7 @@ public class Semantic {
     After the term-context matrix is complete, the method weightTerms calculate the PPMI for
     each value.
 
-    @param document A document of tokens, with each listed on a single line.
+    @param inDir A directory of tiles, with lists of tokens.
     @param window The window size for context.
     @return A complete term-context matrix.
   */
@@ -163,13 +162,9 @@ public class Semantic {
     The wordSearch method uses a binary search on the ArrayList to find
     an index for a given word.
 
-    @param filename A document of tokens, with each listed on a single line.
+    @param inDir A directory of tiles, with lists of tokens.
     @return An array of terms arraned in alphabetic order.
   */
-
-  // REWRITE THIS TO USE THE DICT.RAF INSTEAD OF AN ARRAYLIST? IT WOULD USE THE TERM ID,
-  // WHICH MAPS TO AN INDEX IN THE TCM. THIS WOULD CREATE A TRADE OFF OF MORE IO TIME, HOWEVER.
-  // WOULD IT REALLY BE BEST TO PERFORM EXCESSIVE IO AT THIS TIME?
 
   public static ArrayList<String> getVocab(File inDir) {
 
