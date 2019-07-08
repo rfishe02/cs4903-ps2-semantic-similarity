@@ -78,7 +78,7 @@ public class Semantic {
     @return A complete term-context matrix.
   */
 
-  public static float[][] buildTermContextMatrix(File inDir, ArrayList<String> vocab, int size, int window) {
+  public static float[][] buildTermContextMatrix(File[] files, ArrayList<String> vocab, int size, int window) {
     BufferedReader br;
     String[] prev;
     String[] next;
@@ -91,8 +91,7 @@ public class Semantic {
     float[][] tcm = new float[size][size];
 
     try {
-      File[] files = inDir.listFiles();
-
+      
       for(File f : files) {
 
         prev = null;
