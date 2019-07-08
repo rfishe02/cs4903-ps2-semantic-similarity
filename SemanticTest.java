@@ -1,4 +1,7 @@
 
+import java.util.ArrayList;
+import java.io.*;
+
 public class SemanticTest {
 
   /**
@@ -10,15 +13,14 @@ public class SemanticTest {
   public static void main(String[] args) {
 
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
     Semantic s = new Semantic();
 
     try {
 
-      ArrayList<String> vocab = Semantic.getVocab(in);
-      float[][] tcm = Semantic.buildTermContextMatrix( in,vocab,vocab.size(),Integer.parseInt(args[1]) );
+      ArrayList<String> vocab = s.getVocab(new File(args[0]));
+      float[][] tcm = s.buildTermContextMatrix(new File(args[0]),vocab,vocab.size(),Integer.parseInt(args[1]) );
 
-      int u = Semantic.wordSearch(data.vocab, args[2]);
+      int u = s.wordSearch(vocab, args[2]);
 
       if(u < 0) {
         System.out.println(args[2] +" not found in vocab.");
@@ -26,16 +28,16 @@ public class SemanticTest {
 
           if(args.length < 4) {
             System.out.println("query: top 10 context words -- " + args[2]);
-            Semantic.getContext(data,10,u);
+            s.getContext(vocab,tcm,10,u);
           } else {
 
-            int v = Semantic.wordSearch(data.vocab,args[3]);
+            int v = s.wordSearch(vocab,args[3]);
 
             if(v < 0) {
               System.out.println(args[3] +" not found in vocab.");
             } else {
               System.out.println("query: similarity -- " + args[2] +" & "+ args[3]);
-              System.out.println(calculateSimilarity(data.tcm,u,v));
+              System.out.println(s.calculateSimilarity(tcm,u,v));
             }
 
           }

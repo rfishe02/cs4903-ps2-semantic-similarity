@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 public class Semantic {
-  
+
   /**
     Pre-reads the file to obtain |V|. The vocab will be used to
     find the location of terms in the matrix.
@@ -317,21 +317,21 @@ public class Semantic {
     @return A list of the top k context words.
   */
 
-  public static String[] getContext(TCM data, int k, int u) {
+  public static String[] getContext(ArrayList<String> vocab, float[][] tcm, int k, int u) {
     System.out.println("searching for context");
 
     PriorityQueue<ResultObj> pq = new PriorityQueue<>(new ContextComparator());
     String[] res = new String[k];
 
-    for(int i = 0; i < data.tcm.length; i++) {
+    for(int i = 0; i < tcm.length; i++) {
       if(i != u) {
-        pq.add(new ResultObj(calculateSimilarity(data.tcm,u,i),i));
+        pq.add(new ResultObj(calculateSimilarity(tcm,u,i),i));
       }
     }
 
     int j = 0;
     while(j < k && !pq.isEmpty()) {
-      res[j] = data.vocab.get(pq.remove().row);
+      res[j] = vocab.get(pq.remove().row);
       System.out.println(res[j]);
       j++;
     }
@@ -417,6 +417,7 @@ public class Semantic {
     }
   }
 
+  /*
   public static void writeTCM(TCM tcm, String filename) {
     try {
       FileOutputStream file = new FileOutputStream(filename);
@@ -448,6 +449,6 @@ public class Semantic {
         System.exit(1);
     }
     return tcm;
-  }
+  }*/
 
 }
