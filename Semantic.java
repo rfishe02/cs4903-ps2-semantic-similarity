@@ -101,6 +101,54 @@ public class Semantic {
   }
 
   /**
+    Pre-reads the file to obtain |V|. The vocab will be used to
+    find the location of terms in the matrix.
+
+    Uses a TreeMap to arrange distinct terms in alphabetic order,
+    which are later copied into an ArrayList.
+
+    The wordSearch method uses a binary search on the ArrayList to find
+    an index for a given word.
+    @param inDir A directory of tiles, with lists of tokens.
+    @return An array of terms arraned in alphabetic order.
+  */
+
+  public static ArrayList<String> getVocab(File inDir) {
+    System.out.println("building vocab");
+    ArrayList<String> vocab = null;
+
+    try {
+      TreeSet<String> set = new TreeSet<>(new VocabComparator());
+      BufferedReader br;
+      String read;
+
+      File[] files = inDir.listFiles();
+      for(File f : files) {
+
+        br = new BufferedReader(new FileReader(f));
+        while((read = br.readLine())!=null) {
+          set.add(read);
+        }
+
+        br.close();
+      }
+
+      vocab = new ArrayList<>(set.size());
+
+      Iterator<String> it = set.iterator();
+      while(it.hasNext()) {
+        vocab.add(it.next());
+      }
+
+    } catch(IOException ex) {
+        ex.printStackTrace();
+        System.exit(1);
+    }
+
+    return vocab;
+  }
+
+  /**
     This method uses a document to build a term-context matrix. It requires
     an ArrayList of strings arranged in alphabetic order (the vocabulary).
 
@@ -172,54 +220,6 @@ public class Semantic {
     }
 
     return tcm;
-  }
-
-  /**
-    Pre-reads the file to obtain |V|. The vocab will be used to
-    find the location of terms in the matrix.
-
-    Uses a TreeMap to arrange distinct terms in alphabetic order,
-    which are later copied into an ArrayList.
-
-    The wordSearch method uses a binary search on the ArrayList to find
-    an index for a given word.
-    @param inDir A directory of tiles, with lists of tokens.
-    @return An array of terms arraned in alphabetic order.
-  */
-
-  public static ArrayList<String> getVocab(File inDir) {
-    System.out.println("building vocab");
-    ArrayList<String> vocab = null;
-
-    try {
-      TreeSet<String> set = new TreeSet<>(new VocabComparator());
-      BufferedReader br;
-      String read;
-
-      File[] files = inDir.listFiles();
-      for(File f : files) {
-
-        br = new BufferedReader(new FileReader(f));
-        while((read = br.readLine())!=null) {
-          set.add(read);
-        }
-
-        br.close();
-      }
-
-      vocab = new ArrayList<>(set.size());
-
-      Iterator<String> it = set.iterator();
-      while(it.hasNext()) {
-        vocab.add(it.next());
-      }
-
-    } catch(IOException ex) {
-        ex.printStackTrace();
-        System.exit(1);
-    }
-
-    return vocab;
   }
 
   /**
