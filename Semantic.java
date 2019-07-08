@@ -31,7 +31,7 @@ public class Semantic {
     @return An array of terms arraned in alphabetic order.
   */
 
-  public static ArrayList<String> getVocab(File inDir) {
+  public ArrayList<String> getVocab(File[] files) {
     System.out.println("building vocab");
     ArrayList<String> vocab = null;
 
@@ -40,7 +40,6 @@ public class Semantic {
       BufferedReader br;
       String read;
 
-      File[] files = inDir.listFiles();
       for(File f : files) {
 
         br = new BufferedReader(new FileReader(f));
@@ -78,7 +77,7 @@ public class Semantic {
     @return A complete term-context matrix.
   */
 
-  public static float[][] buildTermContextMatrix(File[] files, ArrayList<String> vocab, int size, int window) {
+  public float[][] buildTermContextMatrix(File[] files, ArrayList<String> vocab, int size, int window) {
     BufferedReader br;
     String[] prev;
     String[] next;
@@ -91,7 +90,7 @@ public class Semantic {
     float[][] tcm = new float[size][size];
 
     try {
-      
+
       for(File f : files) {
 
         prev = null;
@@ -152,7 +151,7 @@ public class Semantic {
     @param nLim The limit used when a null value is passed through prev.
   */
 
-  public static void countTerms(ArrayList<String> vocab, float[][] tcm, int[] sum, String[] prev, String[] next, int pLim, int nLim) {
+  public void countTerms(ArrayList<String> vocab, float[][] tcm, int[] sum, String[] prev, String[] next, int pLim, int nLim) {
     String[] comp = (prev == null) ? next : prev;
     int lim = (prev == null) ? nLim : pLim ;
     int off = 0;
@@ -175,7 +174,7 @@ public class Semantic {
     }
   }
 
-  public static void addFreq(float[][] tcm, int[] sum, int w1, int w2) {
+  public void addFreq(float[][] tcm, int[] sum, int w1, int w2) {
     tcm[ w1 ][ w2 ] ++ ;
     tcm[ w2 ][ w1 ] ++ ;
     sum[ w1 + 1 ] ++; // Count sum, which is used to weight terms.
@@ -193,7 +192,7 @@ public class Semantic {
     @return The index for a term in the term-context matrix.
   */
 
-  public static int wordSearch(ArrayList<String> vocab, String target) {
+  public int wordSearch(ArrayList<String> vocab, String target) {
     int ind = -1;
     int l = 0;
     int m;
@@ -221,7 +220,7 @@ public class Semantic {
     @param sum An array of aggregated frequencies from the term-context matrix.
   */
 
-  public static void weightTerms(float[][] tcm, int[] sum) {
+  public void weightTerms(float[][] tcm, int[] sum) {
 
     System.out.println("applying weights to frequencies");
 
@@ -252,7 +251,7 @@ public class Semantic {
     @return The value PPMI.
   */
 
-  public static double getV(float a, double b, float c, int d, double e) {
+  public double getV(float a, double b, float c, int d, double e) {
     double v = ( (double) a / d )
                / ( (b / d) * ( Math.pow( c,0.75 ) / e ) );
 
@@ -274,7 +273,7 @@ public class Semantic {
     @return The value PPMI.
   */
 
-  public static double getV2(float a, float b, float c, double e) {
+  public double getV2(float a, float b, float c, double e) {
     double v = (double)a / ( b * ( Math.pow( c,0.75 ) / e ) );
 
     if(v > 0.00001) {
@@ -292,7 +291,7 @@ public class Semantic {
     @return The value cosine similarity.
   */
 
-  public static float calculateSimilarity( float[][] tcm, int u, int v ) {
+  public float calculateSimilarity( float[][] tcm, int u, int v ) {
     double one = 0.0;
     double two = 0.0;
     double tot = 0.0;
@@ -316,7 +315,7 @@ public class Semantic {
     @return A list of the top k context words.
   */
 
-  public static String[] getContext(ArrayList<String> vocab, float[][] tcm, int k, int u) {
+  public String[] getContext(ArrayList<String> vocab, float[][] tcm, int k, int u) {
     System.out.println("searching for context");
 
     PriorityQueue<ResultObj> pq = new PriorityQueue<>(new ContextComparator());
@@ -376,7 +375,7 @@ public class Semantic {
 
   /** Print the contents of the matrix to the console. */
 
-  public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
+  public void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
     System.out.printf("%10s ","");
     for(String s : vocab) {
       System.out.printf("%8s ",s);
@@ -403,7 +402,7 @@ public class Semantic {
 
   /** Print the contents of the sums array. */
 
-  public static void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
+  public void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
     for(int i = 0; i < vocab.size(); i++) {
 
       for(int j = 0; j < vocab.size(); j++) {
@@ -417,7 +416,7 @@ public class Semantic {
   }
 
   /*
-  public static void writeTCM(TCM tcm, String filename) {
+  public void writeTCM(TCM tcm, String filename) {
     try {
       FileOutputStream file = new FileOutputStream(filename);
       ObjectOutputStream out = new ObjectOutputStream(file);
@@ -432,7 +431,7 @@ public class Semantic {
     }
   }
 
-  public static TCM loadTCM(String filename) {
+  public TCM loadTCM(String filename) {
     TCM tcm = null;
 
     try {

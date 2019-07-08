@@ -16,10 +16,9 @@ public class SemanticTest {
     Semantic s = new Semantic();
 
     try {
-
-      ArrayList<String> vocab = s.getVocab(new File(args[0]));
-      
       File[] files = new File(args[0]).listFiles();
+
+      ArrayList<String> vocab = s.getVocab(files);
       float[][] tcm = s.buildTermContextMatrix(files,vocab,vocab.size(),Integer.parseInt(args[1]) );
 
       int u = s.wordSearch(vocab, args[2]);
