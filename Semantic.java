@@ -27,7 +27,7 @@ public class Semantic {
 
     The wordSearch method uses a binary search on the ArrayList to find
     an index for a given word.
-    @param inDir A directory of tiles, with lists of tokens.
+    @param files An array of files, with lists of tokens.
     @return An array of terms arraned in alphabetic order.
   */
 
@@ -72,7 +72,7 @@ public class Semantic {
     It packs these terms into segments, which countTerms uses to count contextual terms.
     After the term-context matrix is complete, the method weightTerms calculate the PPMI for
     each value.
-    @param inDir A directory of tiles, with lists of tokens.
+    @param files An array of files, with lists of tokens.
     @param window The window size for context.
     @return A complete term-context matrix.
   */
