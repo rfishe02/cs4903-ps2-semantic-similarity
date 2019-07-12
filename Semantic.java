@@ -19,6 +19,55 @@ import java.util.concurrent.FutureTask;
 public class Semantic {
 
   /**
+    The main method retreives the vocabulary. The vocabulary provides the size of the term-context matrix
+    and the index locations of all terms to other methods.
+    @param args Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line.
+  */
+
+  public static void main(String[] args) {
+
+    long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+    try {
+      File[] files = new File(args[0]).listFiles();
+
+      ArrayList<String> vocab = getVocab(files);
+      float[][] tcm = buildTermContextMatrix(files,vocab,vocab.size(),Integer.parseInt(args[1]) );
+
+      int u = wordSearch(vocab, args[2]);
+
+      if(u < 0) {
+        System.out.println(args[2] +" not found in vocab.");
+      } else {
+
+          if(args.length < 4) {
+            System.out.println("query: top 10 context words -- " + args[2]);
+            getContext(vocab,tcm,10,u);
+          } else {
+
+            int v = wordSearch(vocab,args[3]);
+
+            if(v < 0) {
+              System.out.println(args[3] +" not found in vocab.");
+            } else {
+              System.out.println("query: similarity -- " + args[2] +" & "+ args[3]);
+              System.out.println(calculateSimilarity(tcm,u,v));
+            }
+
+          }
+      }
+
+    } catch(Exception ex) {
+        ex.printStackTrace();
+        System.exit(1);
+    }
+
+    long endMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+    System.out.println("end memory usage -- "+(endMemory/1000/1000/1000)+" GB");
+
+  }
+
+  /**
     Pre-reads the file to obtain |V|. The vocab will be used to
     find the location of terms in the matrix.
 
@@ -31,7 +80,7 @@ public class Semantic {
     @return An array of terms arraned in alphabetic order.
   */
 
-  public ArrayList<String> getVocab(File[] files) {
+  public static ArrayList<String> getVocab(File[] files) {
     System.out.println("building vocab");
     ArrayList<String> vocab = null;
 
@@ -77,7 +126,7 @@ public class Semantic {
     @return A complete term-context matrix.
   */
 
-  public float[][] buildTermContextMatrix(File[] files, ArrayList<String> vocab, int size, int window) {
+  public static float[][] buildTermContextMatrix(File[] files, ArrayList<String> vocab, int size, int window) {
     BufferedReader br;
     String[] prev;
     String[] next;
@@ -151,7 +200,7 @@ public class Semantic {
     @param nLim The limit used when a null value is passed through prev.
   */
 
-  public void countTerms(ArrayList<String> vocab, float[][] tcm, int[] sum, String[] prev, String[] next, int pLim, int nLim) {
+  public static void countTerms(ArrayList<String> vocab, float[][] tcm, int[] sum, String[] prev, String[] next, int pLim, int nLim) {
     String[] comp = (prev == null) ? next : prev;
     int lim = (prev == null) ? nLim : pLim ;
     int off = 0;
@@ -174,7 +223,7 @@ public class Semantic {
     }
   }
 
-  public void addFreq(float[][] tcm, int[] sum, int w1, int w2) {
+  public static void addFreq(float[][] tcm, int[] sum, int w1, int w2) {
     tcm[ w1 ][ w2 ] ++ ;
     tcm[ w2 ][ w1 ] ++ ;
     sum[ w1 + 1 ] ++; // Count sum, which is used to weight terms.
@@ -192,7 +241,7 @@ public class Semantic {
     @return The index for a term in the term-context matrix.
   */
 
-  public int wordSearch(ArrayList<String> vocab, String target) {
+  public static int wordSearch(ArrayList<String> vocab, String target) {
     int ind = -1;
     int l = 0;
     int m;
@@ -220,7 +269,7 @@ public class Semantic {
     @param sum An array of aggregated frequencies from the term-context matrix.
   */
 
-  public void weightTerms(float[][] tcm, int[] sum) {
+  public static void weightTerms(float[][] tcm, int[] sum) {
 
     System.out.println("applying weights to frequencies");
 
@@ -251,7 +300,7 @@ public class Semantic {
     @return The value PPMI.
   */
 
-  public double getV(float a, double b, float c, int d, double e) {
+  public static double getV(float a, double b, float c, int d, double e) {
     double v = ( (double) a / d )
                / ( (b / d) * ( Math.pow( c,0.75 ) / e ) );
 
@@ -273,7 +322,7 @@ public class Semantic {
     @return The value PPMI.
   */
 
-  public double getV2(float a, float b, float c, double e) {
+  public static double getV2(float a, float b, float c, double e) {
     double v = (double)a / ( b * ( Math.pow( c,0.75 ) / e ) );
 
     if(v > 0.00001) {
@@ -291,7 +340,7 @@ public class Semantic {
     @return The value cosine similarity.
   */
 
-  public float calculateSimilarity( float[][] tcm, int u, int v ) {
+  public static float calculateSimilarity( float[][] tcm, int u, int v ) {
     double one = 0.0;
     double two = 0.0;
     double tot = 0.0;
@@ -315,7 +364,7 @@ public class Semantic {
     @return A list of the top k context words.
   */
 
-  public String[] getContext(ArrayList<String> vocab, float[][] tcm, int k, int u) {
+  public static String[] getContext(ArrayList<String> vocab, float[][] tcm, int k, int u) {
     System.out.println("searching for context");
 
     PriorityQueue<Result> pq = new PriorityQueue<>(new ResultComparator());
@@ -375,7 +424,7 @@ public class Semantic {
 
   /** Print the contents of the matrix to the console. */
 
-  public void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
+  public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
     System.out.printf("%10s ","");
     for(String s : vocab) {
       System.out.printf("%8s ",s);
@@ -402,7 +451,7 @@ public class Semantic {
 
   /** Print the contents of the sums array. */
 
-  public void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
+  public static void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
     for(int i = 0; i < vocab.size(); i++) {
 
       for(int j = 0; j < vocab.size(); j++) {
