@@ -318,18 +318,18 @@ public class Semantic {
   public String[] getContext(ArrayList<String> vocab, float[][] tcm, int k, int u) {
     System.out.println("searching for context");
 
-    PriorityQueue<ResultObj> pq = new PriorityQueue<>(new ContextComparator());
+    PriorityQueue<Result> pq = new PriorityQueue<>(new ResultComparator());
     String[] res = new String[k];
 
     for(int i = 0; i < tcm.length; i++) {
       if(i != u) {
-        pq.add(new ResultObj(calculateSimilarity(tcm,u,i),i));
+        pq.add(new Result( calculateSimilarity(tcm,u,i), vocab.get(i) ));
       }
     }
 
     int j = 0;
     while(j < k && !pq.isEmpty()) {
-      res[j] = vocab.get(pq.remove().row);
+      res[j] = pq.remove().name;
       System.out.println(res[j]);
       j++;
     }
@@ -347,8 +347,8 @@ public class Semantic {
 
   /** The PriorityQueue in getContext uses this class to rank all terms. */
 
-  static class ContextComparator implements Comparator<ResultObj> {
-    public int compare(ResultObj s1, ResultObj s2) {
+  static class ResultComparator implements Comparator<Result> {
+    public int compare(Result s1, Result s2) {
       if(s1.score > s2.score) {
         return -1;
       } else if(s1.score < s2.score) {
@@ -361,13 +361,13 @@ public class Semantic {
 
   /** This class stores the results for the getContext method. */
 
-  static class ResultObj {
+  static class Result {
     float score;
-    int row;
+    String name;
 
-    public ResultObj(float score, int row) {
+    public Result(float score, String name) {
       this.score = score;
-      this.row = row;
+      this.name = name;
     }
   }
 
