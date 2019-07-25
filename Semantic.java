@@ -347,15 +347,15 @@ public class Semantic {
     double tot = 0.0;
 
     for(int col = 0; col < tcm[0].length; col++) {
-      tot += ( tcm[u][col] * tcm[v][col] );
-      one += Math.pow( tcm[u][col],2 );
-      two += Math.pow( tcm[v][col],2 );
+      tot = tot + ( tcm[u][col] * tcm[v][col] );
+      one = one + Math.pow( tcm[u][col],2 );
+      two = two + Math.pow( tcm[v][col],2 );
     }
 
     return (float)((tot) / (Math.sqrt(one) * Math.sqrt(two)));
   }
 
-  /** Looks through V, the rows of the tcm matrix, to find the contextual words. 
+  /** Looks through V, the rows of the tcm matrix, to find the contextual words.
     It assumes that the ith word in V represents the ith row in the term-context matrix.
     This method uses a priority queue to return the k most similiar words.
     @param vocab A array that holds the vocabulary for the term-context matrix.
