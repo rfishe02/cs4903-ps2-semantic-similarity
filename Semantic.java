@@ -27,6 +27,11 @@ public class Semantic {
 
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
+    Stemmer stem = new Stemmer();
+    for(int i = 0; i < args.length; i++) {
+      args[i] = formatString(stem,args[i]);
+    }
+
     try {
       File[] files = new File(args[0]).listFiles();
 
@@ -385,6 +390,22 @@ public class Semantic {
     }
 
     return res;
+  }
+
+  /**
+  @param stem
+  @param str
+  @return
+  */
+
+  public static String formatString(Stemmer stem, String str) {
+    str = stem.stemString(str);
+
+    if(str.length() > 7) {
+      str = str.substring(0,8);
+    }
+
+    return str;
   }
 
   /** The TreeMap in getVocab uses this class to arrange terms in alphabetic order. */
