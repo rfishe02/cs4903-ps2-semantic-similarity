@@ -18,8 +18,7 @@ import java.util.concurrent.FutureTask;
 
 public class Semantic {
 
-  /**
-    The main method retreives the vocabulary. The vocabulary provides the size of the term-context matrix
+  /** The main method retreives the vocabulary. The vocabulary provides the size of the term-context matrix
     and the index locations of all terms to other methods.
     @param args Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line.
   */
@@ -67,8 +66,7 @@ public class Semantic {
 
   }
 
-  /**
-    Pre-reads the file to obtain |V|. The vocab will be used to
+  /** Pre-reads the file to obtain the vocabulary. It will be used to
     find the location of terms in the matrix.
 
     Uses a TreeMap to arrange distinct terms in alphabetic order,
@@ -76,8 +74,8 @@ public class Semantic {
 
     The wordSearch method uses a binary search on the ArrayList to find
     an index for a given word.
-    @param files An array of files, with lists of tokens.
-    @return An array of terms arraned in alphabetic order.
+    @param files A list of tokenized files.
+    @return An array of terms arranged in alphabetic order.
   */
 
   public static ArrayList<String> getVocab(File[] files) {
@@ -114,14 +112,15 @@ public class Semantic {
     return vocab;
   }
 
-  /**
-    This method uses a document to build a term-context matrix. It requires
-    an ArrayList of strings arranged in alphabetic order (the vocabulary).
+  /** This method uses a directory of tokenized files to build a term-context matrix.
+    It requires an ArrayList of strings arranged in alphabetic order (the vocabulary).
 
     It packs these terms into segments, which countTerms uses to count contextual terms.
-    After the term-context matrix is complete, the method weightTerms calculate the PPMI for
-    each value.
-    @param files An array of files, with lists of tokens.
+    After the term-context matrix is complete, the method weightTerms calculate the
+    PPMI for each non-zero value.
+    @param files A list of tokenized files.
+    @param vocab A array that holds the vocabulary for the term-context matrix.
+    @param size The size of the term-context matrix.
     @param window The window size for context.
     @return A complete term-context matrix.
   */
@@ -187,13 +186,12 @@ public class Semantic {
     return tcm;
   }
 
-  /**
-    It uses two loops with variables and offset values to find the
-    contextual terms for each word in the segment. It also finds the contextual terms
-    that overlap between two separate segments. If there is no previous segment, it finds
-    the contextual terms within a single segment.
+  /** Uses two loops with variables and offset values to find the contextual terms for each
+    word in the segment. It also finds the contextual terms that overlap between two
+    separate segments. If there is no previous segment, it finds the contextual terms within a single segment.
+    @param vocab A array that holds the vocabulary for the term-context matrix.
     @param tcm A new term-context matrix.
-    @param sum An array to store aggregated frequencies.
+    @param sum An array used to hold the sums of each word in the vocab.
     @param prev The last segment created by buildTermContextMatrix.
     @param next The newest segment created by builtTermContextMatrix.
     @param pLim The limit used when the two segments are of equal size.
@@ -223,6 +221,13 @@ public class Semantic {
     }
   }
 
+  /** A simple method that's used to count a pair of contextual terms.
+  @param tcm A new term-context matrix.
+  @param sum An array used to hold the sums of each word in the vocab.
+  @param w1 The index of the first word.
+  @param w2 The index of the second word.
+  */
+
   public static void addFreq(float[][] tcm, int[] sum, int w1, int w2) {
     tcm[ w1 ][ w2 ] ++ ;
     tcm[ w2 ][ w1 ] ++ ;
@@ -231,12 +236,12 @@ public class Semantic {
     sum[0] += 2;
   }
 
-  /**
-    Use a binary search to find the reference to a column for a given term.
+  /** Uses a binary search to find the reference to a column for a given term.
     This is an attempt to avoid using a HashMap to map Strings to indices.
     However, it takes logarithmic time rather than constant time.
 
     The method returns the index of the String as the column reference.
+    @param vocab A array that holds the vocabulary for the term-context matrix.
     @param target The desired term in the vocabulary.
     @return The index for a term in the term-context matrix.
   */
@@ -248,7 +253,6 @@ public class Semantic {
     int r = vocab.size()-1;
 
     while(l <= r) {
-
       m = (l+r)/2;
 
       if(target.compareTo(vocab.get(m)) > 0) {
@@ -264,13 +268,11 @@ public class Semantic {
   }
 
   /** Uses PPMI to weight all values in the term-context matrix.
-
     @param tcm A complete term-context matrix.
     @param sum An array of aggregated frequencies from the term-context matrix.
   */
 
   public static void weightTerms(float[][] tcm, int[] sum) {
-
     System.out.println("applying weights to frequencies");
 
     double e = Math.pow(sum[0],0.75);
@@ -292,9 +294,9 @@ public class Semantic {
 
   /** Calculates cosine similarity, given two rows in the context-term matrix.
     This is written like the exact formula.
-
     @param a The numerator of the formula.
     @param b The leftmost term in the denominator.
+    @param c The rightmost term in the denominator.
     @param d The total frequencies of all entries in the term-context matrix.
     @param e A pre-calculated value for the denominator of the rightmost term in the equation.
     @return The value PPMI.
@@ -314,7 +316,6 @@ public class Semantic {
 
   /** Calculates cosine similarity, given two rows in the context-term matrix.
     This version was re-written to avoid extra division.
-
     @param a The numerator.
     @param b The leftmost term in the denominator.
     @param c The rightmost term in the denominator.
@@ -333,7 +334,7 @@ public class Semantic {
     return v;
   }
 
-  /** Calculates cosine similarity, given two rows in the context-term matrix.
+  /** Calculates the cosine similarity of two rows in the context-term matrix.
     @param tcm A complete term-context matrix.
     @param u The word in question.
     @param v A term in the vocabulary.
@@ -354,10 +355,10 @@ public class Semantic {
     return (float)((tot) / (Math.sqrt(one) * Math.sqrt(two)));
   }
 
-  /**
-    Look through V, the rows of the tcm matrix, to find the contextual words.
-    It assumes that the ith row in the tcm matrix represents the ith word in V, which is in alphabetic order.
+  /** Looks through V, the rows of the tcm matrix, to find the contextual words. 
+    It assumes that the ith word in V represents the ith row in the term-context matrix.
     This method uses a priority queue to return the k most similiar words.
+    @param vocab A array that holds the vocabulary for the term-context matrix.
     @param tcm  A complete term-context matrix.
     @param k The number of desired context words.
     @param u The word in question.
