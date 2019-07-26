@@ -2,6 +2,6 @@
 *.class
 *.txt
 *.raf
-./cs4903-ps2-javadoc/*
+cs4903-ps2-javadoc/
 cs4903-ps2-javadoc.zip
 source-code.zip
