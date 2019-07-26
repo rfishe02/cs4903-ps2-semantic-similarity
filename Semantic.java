@@ -20,7 +20,7 @@ public class Semantic {
 
   /** The main method retreives the vocabulary. The vocabulary provides the size of the term-context matrix
     and the index locations of all terms to other methods.
-    @param args Accepts the commands <filename>, <window>, <word1>, and optionally <word2> from the command line.
+    @param args Accepts the commands [filename], [window], [word1], and optionally [word2] from the command line.
   */
 
   public static void main(String[] args) {
@@ -28,7 +28,7 @@ public class Semantic {
     long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
     Stemmer stem = new Stemmer();
-    for(int i = 0; i < args.length; i++) {
+    for(int i = 2; i < args.length; i++) {
       args[i] = formatString(stem,args[i]);
     }
 
@@ -392,10 +392,10 @@ public class Semantic {
     return res;
   }
 
-  /**
-  @param stem
-  @param str
-  @return
+  /** A simple method that uses pre-processing steps on an input String.
+  @param stem A class that is capable of stemming.
+  @param str An input String.
+  @return A processed String.
   */
 
   public static String formatString(Stemmer stem, String str) {
@@ -444,8 +444,6 @@ public class Semantic {
 
   //--------------------------------------------------------
 
-  /** Print the contents of the matrix to the console. */
-
   public static void printContextMatrix(ArrayList<String> vocab, float[][] matrix) {
     System.out.printf("%10s ","");
     for(String s : vocab) {
@@ -470,8 +468,6 @@ public class Semantic {
       System.out.println();
     }
   }
-
-  /** Print the contents of the sums array. */
 
   public static void printSums(ArrayList<String> vocab, float[][] tcm, int[] sum) {
     for(int i = 0; i < vocab.size(); i++) {
